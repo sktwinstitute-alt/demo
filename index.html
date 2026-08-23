@@ -6,6 +6,8 @@
 <title>Typing Thalaiva</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
   --bg1:#f8fafc; --bg2:#f1f5f9;
@@ -654,7 +656,7 @@ body{
       </div>
       <div class="service-grid">
         <button class="service-btn" onclick="window.open('https://www.sri-kalaimagal-institute-gummidipoondi.in/', '_system')"><span class="ic">🌐</span>Online Practice</button>
-        <button class="service-btn" onclick="openModal('contact')"><span class="ic">📞</span>Help & Support</button>
+        <button class="service-btn" onclick="openHelpWhatsApp()"><span class="ic">📞</span>Help & Support</button>
       </div>
 
       <!-- ACHIEVEMENTS -->
@@ -725,10 +727,7 @@ body{
       <div class="card">
         <h2>Typing Test Configuration</h2>
 
-        <div class="field">
-          <label>Student Name:</label>
-          <input type="text" id="studentName" placeholder="Enter your name" maxlength="40">
-        </div>
+        <input type="text" id="studentName" style="display:none;" value="Student">
 
         <div class="field selwrap">
           <label>Language:</label>
@@ -812,6 +811,38 @@ body{
       </div>
     </div>
 
+    <!-- ---------------- PROFILE TAB ---------------- -->
+    <div class="tab-content" id="tab-profile">
+      <div class="apphead">
+        <div class="brand">My <span>Profile</span></div>
+      </div>
+
+      <div class="card">
+        <h2>Student Details</h2>
+        <div class="field">
+          <label>Student Name:</label>
+          <input type="text" id="profName" placeholder="Enter your name" maxlength="40">
+        </div>
+        <div class="field">
+          <label>Address:</label>
+          <input type="text" id="profAddress" placeholder="Enter your address" maxlength="120">
+        </div>
+        <div class="field">
+          <label>Mobile Number:</label>
+          <input type="text" id="profMobile" placeholder="Enter your mobile number" maxlength="15" inputmode="tel">
+        </div>
+        <div class="field">
+          <label>Institute Name:</label>
+          <input type="text" id="profInstitute" placeholder="Enter your institute name" maxlength="80">
+        </div>
+        <button class="solidbtn" style="width:100%;" onclick="saveProfile()">💾 Save Profile</button>
+      </div>
+
+      <div class="card" style="text-align:center;">
+        <button class="service-btn full-width" onclick="openHelpWhatsApp()"><span class="ic">💬</span>Help via WhatsApp</button>
+      </div>
+    </div>
+
     <!-- BOTTOM NAVIGATION -->
     <nav class="bottom-nav">
       <button class="nav-tab active" id="btnTabHome" onclick="switchTab('home')">
@@ -829,6 +860,14 @@ body{
       <button class="nav-tab" id="btnTabSpeed" onclick="switchTab('speed')">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M12.5 7h-1v6l5.25 3.15.5-.82-4.75-2.83z"/></svg>
         <span>Speed</span>
+      </button>
+      <button class="nav-tab" id="btnTabProfile" onclick="switchTab('profile')">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 100-8 4 4 0 000 8z"/></svg>
+        <span>Profile</span>
+      </button>
+      <button class="nav-tab" id="btnTabHelp" onclick="openHelpWhatsApp()">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 00-8.66 15l-1.3 4.75L7.9 20.6A10 10 0 1012 2zm5.2 14.3c-.22.62-1.28 1.2-1.78 1.27-.46.07-1.02.1-1.65-.1a15 15 0 01-1.5-.55 12.4 12.4 0 01-4.5-3.98 5.9 5.9 0 01-1.2-3.1c0-1.05.55-1.55.75-1.77.2-.22.44-.27.6-.27h.42c.14 0 .32-.05.5.38.2.46.68 1.6.74 1.72.06.12.1.27.02.43-.08.16-.12.26-.24.4-.12.14-.25.31-.36.42-.12.12-.24.25-.1.5.14.24.62 1.03 1.34 1.67.92.82 1.7 1.08 1.94 1.2.24.12.38.1.52-.06.14-.16.6-.7.76-.94.16-.24.32-.2.54-.12.22.08 1.38.65 1.62.77.24.12.4.18.46.28.06.1.06.58-.16 1.2z"/></svg>
+        <span>Help</span>
       </button>
     </nav>
   </section>
@@ -872,6 +911,7 @@ body{
 
   <!-- ===================== RESULTS SCREEN ===================== -->
   <section class="screen" id="screen-results">
+   <div id="resultsCapture">
     <div class="resheader">
       <h2>Typing Analysis</h2>
       <div class="l1" id="resName">Name: Student</div>
@@ -950,6 +990,12 @@ body{
       </div>
     </div>
 
+   </div>
+
+    <div class="testbtnrow" id="resultShareRow" style="margin-bottom:8px;">
+      <button class="ghostbtn" id="btnDownloadPdf" onclick="downloadResultPDF()">📄 Download PDF</button>
+      <button class="solidbtn" id="btnShareResult" onclick="shareResultImage()">📤 Share</button>
+    </div>
     <div class="testbtnrow">
       <button class="ghostbtn" onclick="backToConfig()">Back to Setup</button>
       <button class="solidbtn" onclick="retrySame()">Try Again</button>
@@ -1220,6 +1266,51 @@ $('avatarFileInput').addEventListener('change', e=>{
   e.target.value = '';
 });
 
+/* =====================================================================
+   STUDENT PROFILE — name, address, mobile, institute. Persisted via
+   window.storage (personal, not shared) and used app-wide as the source
+   of truth for the student's name (replaces the old Speed-tab field).
+===================================================================== */
+let STUDENT_PROFILE = { name:'', address:'', mobile:'', institute:'' };
+
+async function loadProfile(){
+  try{
+    const res = await window.storage.get('student-profile', false);
+    if(res && res.value) STUDENT_PROFILE = Object.assign(STUDENT_PROFILE, JSON.parse(res.value));
+  }catch(e){ /* no profile saved yet */ }
+  if($('profName')) $('profName').value = STUDENT_PROFILE.name || '';
+  if($('profAddress')) $('profAddress').value = STUDENT_PROFILE.address || '';
+  if($('profMobile')) $('profMobile').value = STUDENT_PROFILE.mobile || '';
+  if($('profInstitute')) $('profInstitute').value = STUDENT_PROFILE.institute || '';
+  if($('studentName')) $('studentName').value = STUDENT_PROFILE.name || 'Student';
+  updateVannakam();
+}
+
+async function saveProfile(){
+  STUDENT_PROFILE = {
+    name: ($('profName').value || '').trim(),
+    address: ($('profAddress').value || '').trim(),
+    mobile: ($('profMobile').value || '').trim(),
+    institute: ($('profInstitute').value || '').trim()
+  };
+  if($('studentName')) $('studentName').value = STUDENT_PROFILE.name || 'Student';
+  try{
+    await window.storage.set('student-profile', JSON.stringify(STUDENT_PROFILE), false);
+    toast('✅ Profile saved');
+  }catch(e){ toast('⚠️ Could not save profile'); }
+  updateVannakam();
+}
+
+function updateVannakam(){
+  const name = STUDENT_PROFILE.name && STUDENT_PROFILE.name.trim() ? STUDENT_PROFILE.name.trim() : 'Thalaiva';
+  const el = $('lblVanakkam');
+  if(el) el.textContent = `Vannakam, ${name}! 👋`;
+}
+
+function openHelpWhatsApp(){
+  window.open('https://wa.me/919384510098', '_system');
+}
+
 function toast(msg){
   const t = $('toast');
   t.textContent = msg;
@@ -1240,7 +1331,7 @@ function showScreen(id){
 function readConfig(){
   const tl = document.querySelector('input[name="tl"]:checked');
   CFG = {
-    name: $('studentName').value.trim() || 'Student',
+    name: (STUDENT_PROFILE.name && STUDENT_PROFILE.name.trim()) || 'Student',
     lang: $('selLang').value,
     layout: $('selLayout').value,
     passageIdx: parseInt($('selPassage').value || '0', 10),
@@ -2241,6 +2332,74 @@ function openSettings(){
 function retrySame(){ startTest(mode); }
 
 /* =====================================================================
+   RESULT DOWNLOAD (PDF) & SHARE (image) — mobile friendly, captures the
+   results card as a canvas via html2canvas, then either turns it into a
+   PDF (jsPDF) or shares it as an image using the native Web Share API.
+===================================================================== */
+async function captureResultsCanvas(){
+  const node = $('resultsCapture');
+  return await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+}
+
+async function downloadResultPDF(){
+  const btn = $('btnDownloadPdf');
+  const orig = btn ? btn.textContent : '';
+  try{
+    if(btn){ btn.textContent = 'Preparing…'; btn.disabled = true; }
+    const canvas = await captureResultsCanvas();
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'pt', [canvas.width, canvas.height]);
+    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    const fname = `${(CFG.name||'Student').replace(/\s+/g,'_')}_Typing_Result.pdf`;
+    pdf.save(fname);
+    toast('✅ PDF downloaded');
+  }catch(e){
+    console.error('PDF generation failed', e);
+    toast('⚠️ Could not create PDF');
+  }finally{
+    if(btn){ btn.textContent = orig; btn.disabled = false; }
+  }
+}
+
+async function shareResultImage(){
+  const btn = $('btnShareResult');
+  const orig = btn ? btn.textContent : '';
+  try{
+    if(btn){ btn.textContent = 'Preparing…'; btn.disabled = true; }
+    const canvas = await captureResultsCanvas();
+    const shareText = `${CFG.name}'s Typing Result — Net WPM: ${$('statNet').textContent}, Accuracy: ${$('statAccResult').textContent}`;
+
+    canvas.toBlob(async (blob) => {
+      const fname = `${(CFG.name||'Student').replace(/\s+/g,'_')}_Typing_Result.png`;
+      const file = new File([blob], fname, { type: 'image/png' });
+
+      if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
+        try{
+          await navigator.share({ files: [file], title: 'Typing Result', text: shareText });
+          toast('✅ Shared');
+        }catch(err){
+          if(err && err.name !== 'AbortError') toast('⚠️ Share cancelled');
+        }
+      } else {
+        // Fallback for browsers/devices without file-sharing support: download the image instead
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = fname;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url), 2000);
+        toast('📥 Image saved — share it from your gallery');
+      }
+      if(btn){ btn.textContent = orig; btn.disabled = false; }
+    }, 'image/png');
+  }catch(e){
+    console.error('Share failed', e);
+    toast('⚠️ Could not share result');
+    if(btn){ btn.textContent = orig; btn.disabled = false; }
+  }
+}
+
+/* =====================================================================
    PRACTICE MODE — untimed letter/word drills for English & Tamil,
    sourced from the institute's own PRAC lesson bank.
 ===================================================================== */
@@ -2508,7 +2667,7 @@ function syncContinueCard(){
   const cleanTitle = pTitle.replace(/^(English|Tamil) Passage \d+ -?\s*/, '');
   
   $('lblContinueDesc').textContent = `${cleanTitle} · ${CFG.time}s`;
-  $('lblVanakkam').textContent = (CFG.lang === 'ta') ? `Vanakkam, ${CFG.name}! 👋` : `Welcome, ${CFG.name}! 👋`;
+  updateVannakam();
 }
 
 function quickSelect(type, val){
@@ -2597,6 +2756,7 @@ function updateDashboardStats(list){
    INIT
 ==================================================================== */
 loadRecentResults();
+loadProfile();
 if($('btnHomeStartTest')){
   $('btnHomeStartTest').addEventListener('click', () => {
     readConfig();

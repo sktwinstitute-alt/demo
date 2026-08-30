@@ -980,6 +980,12 @@ body{
       </div>
 
       <div class="mb-block">
+        <div class="mb-label">Skipped Words — not counted (<span id="mbSkippedCount">0</span>)</div>
+        <div class="mb-chips" id="mbSkippedChips"></div>
+        <div class="mb-zero" id="mbSkippedZero" style="display:none;">✓ No skipped words</div>
+      </div>
+
+      <div class="mb-block">
         <div class="mb-label">Missing Spaces (<span id="mbMissingFormula">0 / 5 = 0 mistake</span>)</div>
         <div class="mb-zero" id="mbMissingZero">✓ No missing spaces</div>
       </div>
@@ -990,7 +996,7 @@ body{
       </div>
 
       <div class="mb-block">
-        <div class="mb-label">Omissions (<span id="mbOmitFormula">0 chars / 5 = 0 mistakes</span>)</div>
+        <div class="mb-label">Omissions — not counted (<span id="mbOmitFormula">0 chars</span>)</div>
         <div class="mb-zero" id="mbOmitZero">✓ No omissions</div>
       </div>
 
@@ -1002,7 +1008,8 @@ body{
 
       <div class="mb-summary">
         <div class="mb-srow"><span>Word Errors</span><b id="mbSumWordErr">0</b></div>
-        <div class="mb-srow"><span>Omissions</span><b id="mbSumOmit">0 / 5 = 0</b></div>
+        <div class="mb-srow"><span>Skipped Words (not counted)</span><b id="mbSumSkipped">0</b></div>
+        <div class="mb-srow"><span>Omissions (not counted)</span><b id="mbSumOmit">0 chars</b></div>
         <div class="mb-srow"><span>Missing Spaces</span><b id="mbSumMissing">0 / 5 = 0</b></div>
         <div class="mb-srow"><span>Extra Characters</span><b id="mbSumExtra">0</b></div>
         <div class="mb-srow mb-total"><span>Total Mistakes</span><b id="mbSumTotal">0</b></div>
@@ -2105,7 +2112,15 @@ function calcResults(typed, orig, elapsedSec, onlyEvaluateTyped){
   });
 
   const missingSpaceMistakes = Math.floor(missingSpaceEvents/5);
-  const totalMistakes = realWordErrors.length + missingSpaceMistakes + extraCharMistakes + omitCharMistakes;
+  // "Mistakes" should only reflect content the student actually typed wrong —
+  // substitutions, missing-space joins, and stray extra characters. Skipped
+  // mid-passage words ('omit-mid') and the trailing partial word they were
+  // still typing when time ran out (omitCharMistakes) were never actually
+  // finished/typed, so — same as the untyped tail — they're tracked and
+  // still shown in the breakdown for reference, but are NOT counted toward
+  // the Mistakes total or the marks deduction.
+  const subMistakes = realWordErrors.filter(e=>e.kind==='sub').length;
+  const totalMistakes = subMistakes + missingSpaceMistakes + extraCharMistakes;
   // Marks are only calculated for the 10‑minute test
   const marks = (CFG.time === 600) ? Math.max(0, +(50 - (totalMistakes*1.8)).toFixed(1)) : null;
 
@@ -2202,8 +2217,12 @@ function submitTest(auto){
 
   const r = calcResults(TA.value, passageText, secsElapsed, CFG.time !== 600);
   lastResult = r;
-  // Pass/Fail: Net WPM vs the selected Speed Type's target (Junior 30 / Senior 45 / Unlimited 0)
-  const target = CFG.speedType === 'senior' ? 45 : (CFG.speedType === 'junior' ? 30 : 0);
+  // Pass/Fail: Net WPM vs the selected Speed Type's target (Junior 30 / Senior 45).
+  // Only the full 10-minute test is long enough to fairly judge against a
+  // sustained-speed target — same reasoning as why Marks are 10-min-only.
+  // 30s / 1m / 5m tests are always treated as Unlimited (no target, always pass),
+  // regardless of which Speed Type is selected in the setup screen.
+  const target = (CFG.time === 600) ? (CFG.speedType === 'senior' ? 45 : (CFG.speedType === 'junior' ? 30 : 0)) : 0;
   r.target = target;
   r.passed = target === 0 ? true : (r.netWpm >= target);
 
@@ -2221,7 +2240,12 @@ function renderResults(r, typed){
   const langLabel = CFG.lang==='ta' ? ('Tamil · '+(LAYOUT_LABEL[CFG.layout]||'Typewriter')) : 'English';
   const passageTitle = (PASSAGES[CFG.lang] && PASSAGES[CFG.lang][CFG.passageIdx]) ? PASSAGES[CFG.lang][CFG.passageIdx].title : '';
 
-  const speedLabel = CFG.speedType === 'senior' ? 'Senior (45 WPM target)' : (CFG.speedType === 'junior' ? 'Junior (30 WPM target)' : 'Unlimited (No target)');
+  // Short-duration tests (30s/1m/5m) are always scored as Unlimited, so the
+  // label shown must match what was actually evaluated — not the Speed Type
+  // picked at setup, which only applies to the full 10-minute test.
+  const speedLabel = (CFG.time !== 600)
+    ? 'Unlimited (No target)'
+    : (CFG.speedType === 'senior' ? 'Senior (45 WPM target)' : (CFG.speedType === 'junior' ? 'Junior (30 WPM target)' : 'Unlimited (No target)'));
 
   $('resName').textContent = 'Name: ' + CFG.name;
   $('resTitle').textContent = "'Sri Kalaimagal Typewriting Institute' — " + speedLabel;
@@ -2257,17 +2281,32 @@ function renderResults(r, typed){
 function renderMistakesBreakdown(r){
   $('mistakesCard').style.display = 'block';
 
-  // Word Errors
-  $('mbWordErrCount').textContent = r.wordErrors.length;
-  if(r.wordErrors.length===0){
+  const subErrors = r.wordErrors.filter(we=>we.kind==='sub');
+  const skippedErrors = r.wordErrors.filter(we=>we.kind==='omit-mid');
+
+  // Word Errors — only actual substitutions (typed the wrong word). These count.
+  $('mbWordErrCount').textContent = subErrors.length;
+  if(subErrors.length===0){
     $('mbWordErrChips').innerHTML = '';
     $('mbWordErrZero').style.display = 'block';
   } else {
     $('mbWordErrZero').style.display = 'none';
-    $('mbWordErrChips').innerHTML = r.wordErrors.map(we=>{
-      const label = we.kind==='sub' ? `${esc(we.typed)} (${esc(we.orig)})` : `${esc(we.orig)} (deleted)`;
-      return `<span class="mb-chip">${label}</span>`;
-    }).join('');
+    $('mbWordErrChips').innerHTML = subErrors.map(we=>
+      `<span class="mb-chip">${esc(we.typed)} (${esc(we.orig)})</span>`
+    ).join('');
+  }
+
+  // Skipped Words — words jumped over mid-passage without being typed at all.
+  // Shown for reference only; NOT counted toward Mistakes (nothing was mistyped).
+  $('mbSkippedCount').textContent = skippedErrors.length;
+  if(skippedErrors.length===0){
+    $('mbSkippedChips').innerHTML = '';
+    $('mbSkippedZero').style.display = 'block';
+  } else {
+    $('mbSkippedZero').style.display = 'none';
+    $('mbSkippedChips').innerHTML = skippedErrors.map(we=>
+      `<span class="mb-chip">${esc(we.orig)} (skipped)</span>`
+    ).join('');
   }
 
   // Missing Spaces
@@ -2278,10 +2317,11 @@ function renderMistakesBreakdown(r){
   $('mbExtraCount').textContent = r.extraCharMistakes;
   $('mbExtraZero').style.display = r.extraCharMistakes===0 ? 'block' : 'none';
 
-  // Omissions (char-level, partial trailing word)
+  // Omissions (char-level, partial trailing word) — NOT counted toward Mistakes,
+  // same reasoning as Skipped Words: the student never finished typing it.
   const omitChars = r.omitCharsExact;
-  $('mbOmitFormula').textContent = `${omitChars} chars / 5 = ${r.omitCharMistakes} mistake${r.omitCharMistakes===1?'':'s'}`;
-  $('mbOmitZero').style.display = r.omitCharMistakes===0 ? 'block' : 'none';
+  $('mbOmitFormula').textContent = `${omitChars} chars`;
+  $('mbOmitZero').style.display = omitChars===0 ? 'block' : 'none';
 
   // Letters to Practice
   if(r.weakestKeys.length===0){
@@ -2293,8 +2333,9 @@ function renderMistakesBreakdown(r){
   }
 
   // Summary totals
-  $('mbSumWordErr').textContent = r.wordErrors.length;
-  $('mbSumOmit').textContent = `${omitChars} / 5 = ${r.omitCharMistakes}`;
+  $('mbSumWordErr').textContent = subErrors.length;
+  $('mbSumSkipped').textContent = skippedErrors.length;
+  $('mbSumOmit').textContent = `${omitChars} chars`;
   $('mbSumMissing').textContent = `${r.missingSpaceEvents} / 5 = ${r.missingSpaceMistakes}`;
   $('mbSumExtra').textContent = r.extraCharMistakes;
   $('mbSumTotal').textContent = r.errors;

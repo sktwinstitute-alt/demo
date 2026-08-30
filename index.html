@@ -260,6 +260,9 @@ body{
 .statbox{background:#fff;border:1.5px solid #eadfce;border-radius:12px;padding:10px 12px;}
 .statbox .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
 .statbox .v{font-size:18px;font-weight:800;color:var(--orange);margin-top:2px;}
+.statbox .cap{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.3;}
+.statbox.hl{border-color:var(--green);background:rgba(16,185,129,.07);}
+.statbox.hl .v{color:var(--green);}
 
 /* modal */
 .modalbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:center;justify-content:center;padding:20px;}
@@ -962,8 +965,8 @@ body{
     <div class="statsgrid">
       <div class="statbox"><div class="k">Accuracy</div><div class="v" id="statAccResult">0%</div></div>
       <div class="statbox"><div class="k">Mistakes</div><div class="v" id="statMistakesResult">0</div></div>
-      <div class="statbox"><div class="k">Gross WPM</div><div class="v" id="statGross">0</div></div>
-      <div class="statbox"><div class="k">Net WPM</div><div class="v" id="statNet">0</div></div>
+      <div class="statbox"><div class="k">Gross WPM</div><div class="v" id="statGross">0</div><div class="cap">The total typing speed before deducting mistakes.</div></div>
+      <div class="statbox hl"><div class="k">Net WPM</div><div class="v" id="statNet">0</div><div class="cap">The actual typing speed after deducting errors.</div></div>
       <div class="statbox" id="marksBox" style="grid-column:1/3;display:none;"><div class="k">Marks (/50) — 10 min test</div><div class="v" id="statMarks">0</div></div>
     </div>
 
@@ -1676,9 +1679,48 @@ function tamilCharKey(taEl, composer, layout, c){
       if(!Object.prototype.hasOwnProperty.call(map, tail)) continue;
       const candidate = tail + c;
       if(Object.prototype.hasOwnProperty.call(map, candidate)){
-        const dropLen = composer.outLen - map[tail].length; // untouched leading part
+        const fullOldOutput = map[composer.raw];
+        const tailOutput = map[tail];
         const output = map[candidate];
-        replaceComposedOutput(taEl, output, composer.outLen - dropLen);
+        // Trimming the last `tailOutput.length` characters off the currently
+        // displayed text is only valid when those trailing characters really
+        // ARE tailOutput (e.g. doubled-consonant "ம்ம" genuinely ends with
+        // "ம"). For atomic dead-key combos like Typewriter's ";f" -> "க்"
+        // (க + a COMBINING PULLI that renders after it, not tailOutput's
+        // own "க"), the assumption breaks — trimming would cut off the
+        // pulli, not the "க", leaving stray leftover text (e.g. "ககா").
+        // Guard with endsWith(): if the trailing text doesn't actually match
+        // tailOutput, there's nothing safe to preserve, so discard the whole
+        // previous unit and render the new candidate output cleanly instead.
+        if(fullOldOutput && fullOldOutput.endsWith(tailOutput)){
+          const dropLen = composer.outLen - tailOutput.length; // untouched leading part
+          replaceComposedOutput(taEl, output, composer.outLen - dropLen);
+        } else {
+          replaceComposedOutput(taEl, output, composer.outLen);
+        }
+        composer.raw = candidate; composer.outLen = output.length;
+        return;
+      }
+    }
+  }
+  // newBuf doesn't lead anywhere as a suffix-reduction either — but the user
+  // may have typed a consonant that resolved WITH a trailing modifier key
+  // (e.g. the pulli key in Tamil99's "hf" -> க்), and is now correcting by
+  // adding a vowel that should apply to the BASE consonant, replacing the
+  // pulli (e.g. க் + ஆ -> கா, i.e. "hf" corrected to "hq"). Unlike the tail
+  // reduction above (which handles doubled-consonant forms), this drops
+  // characters off the END of the buffered raw sequence to recover a valid
+  // leading (prefix) sub-sequence, then tries combining THAT with the new
+  // key. Try the longest valid prefix first so we recover as much of the
+  // original consonant as possible.
+  if(wasComposing){
+    for(let k=composer.raw.length-1;k>=1;k--){
+      const head = composer.raw.slice(0,k);
+      if(!Object.prototype.hasOwnProperty.call(map, head)) continue;
+      const candidate = head + c;
+      if(Object.prototype.hasOwnProperty.call(map, candidate)){
+        const output = map[candidate];
+        replaceComposedOutput(taEl, output, wasComposing ? composer.outLen : 0);
         composer.raw = candidate; composer.outLen = output.length;
         return;
       }
@@ -1879,11 +1921,100 @@ function calcResults(typed, orig, elapsedSec, onlyEvaluateTyped){
   // trim trailing inserts past the last matched/deleted original word (overtyped buffer noise)
   let lastOrigOpIdx=-1;
   ops.forEach((op,k)=>{ if(op.type==='match'||op.type==='del') lastOrigOpIdx=k; });
-  const trimmedOps = ops.filter((op,k)=> !(op.type==='ins' && k>lastOrigOpIdx));
+  let trimmedOps = ops.filter((op,k)=> !(op.type==='ins' && k>lastOrigOpIdx));
+
+  // Re-interleave each run of consecutive ins/del ops (everything between two
+  // 'match' ops, or at either end). The LCS backtrack above has no anchoring
+  // match to guide it through such a run, so its tie-breaking rule tends to
+  // emit ALL the inserts first and THEN all the deletes for that run (rather
+  // than the natural ins,del,del,ins,del,... order a human transcript has).
+  // That ordering defeats every pass below, which all look for an insert
+  // physically NEXT TO the delete(s) it corresponds to — e.g. missing-space
+  // detection (Pass 1) requires an insert to be immediately followed by the
+  // consecutive original words it merged. Left unfixed, a realistic mistake
+  // like running two or three words together mid-passage gets misread as a
+  // pile of unrelated word substitutions/omissions instead of the (lenient)
+  // missing-space penalty it actually is. Rebuild each run by walking the
+  // ordered list of typed chunks against the ordered list of original words
+  // it replaced, greedily re-pairing each insert with whichever consecutive
+  // original words its text matches (a join), or with the next unclaimed
+  // original word (a plain substitution) — this restores the natural
+  // interleaving while preserving every op and both internal orderings.
+  trimmedOps = (function interleaveBlocks(opsIn){
+    const out = [];
+    let i = 0;
+    while(i < opsIn.length){
+      if(opsIn[i].type === 'match'){ out.push(opsIn[i]); i++; continue; }
+      let j = i;
+      const insList=[], delList=[];
+      while(j < opsIn.length && opsIn[j].type !== 'match'){
+        (opsIn[j].type==='ins' ? insList : delList).push(opsIn[j]);
+        j++;
+      }
+      let dp = 0;
+      for(const insOp of insList){
+        let concat='', consumedCount=0, p=dp;
+        while(p < delList.length){
+          concat += delList[p].orig; consumedCount++;
+          if(concat === insOp.typed || concat.length >= insOp.typed.length) break;
+          p++;
+        }
+        if(concat === insOp.typed && consumedCount >= 1){
+          out.push(insOp);
+          for(let q=dp; q<dp+consumedCount; q++) out.push(delList[q]);
+          dp += consumedCount;
+        } else if(dp < delList.length){
+          out.push(insOp); out.push(delList[dp]); dp += 1;
+        } else {
+          out.push(insOp);
+        }
+      }
+      for(; dp < delList.length; dp++) out.push(delList[dp]);
+      i = j;
+    }
+    return out;
+  })(trimmedOps);
+
+  // Compute the last real match position, and — if the student's very last
+  // keystroke left them mid-word — identify the tail delete that's actually
+  // their in-progress partial word, UP FRONT and BEFORE Pass 0 runs. This
+  // must happen first: Pass 0 greedily claims any insert immediately
+  // followed by a delete as a full-word "substitution", and a partial word
+  // typed at the very end (e.g. "extraor" for "extraordinary") produces
+  // exactly that ins+del shape. Left in its original order-of-execution,
+  // Pass 0 would claim it before this partial-word check ever ran, so a
+  // student whose test simply timed out mid-word — which is how most timed
+  // tests end — would be wrongly charged a full word-substitution mistake
+  // instead of the lenient char-level omission this really is.
+  let lastMatchIdx=-1;
+  trimmedOps.forEach((op,k)=>{ if(op.type==='match') lastMatchIdx=k; });
 
   const skipSet = new Set();
   const realWordErrors = [];   // {orig, typed, kind:'sub'|'omit-mid'|'omit-tail'}
   let extraCharMistakes = 0;
+
+  let omitCharMistakes = 0;
+  let omitCharsExact = 0;
+  let partialTailIdx = -1;
+  if(endedMidWord){
+    const lastTyped = typedWordsFull[typedWordsFull.length-1];
+    for(let k=lastMatchIdx+1;k<trimmedOps.length;k++){
+      if(trimmedOps[k].type!=='del') continue;
+      const w = trimmedOps[k].orig;
+      if(w.toLowerCase().startsWith(lastTyped.toLowerCase()) && lastTyped.length>=1){
+        omitCharsExact = w.length - lastTyped.length;
+        omitCharMistakes = Math.floor(omitCharsExact/5);
+        partialTailIdx = k;
+        skipSet.add(k);
+        // The insert immediately before it (if any) is the student's own
+        // partial keystrokes for this same word — already credited above
+        // via omitCharMistakes, so it must not ALSO be scored separately
+        // as unmatched "extra characters" by Pass 1 below.
+        if(k>0 && trimmedOps[k-1].type==='ins') skipSet.add(k-1);
+      }
+      break; // only the very first tail word can be the in-progress partial
+    }
+  }
 
   // Pass 0: adjacent ins+del / del+ins = a genuine word substitution
   for(let k=0;k<trimmedOps.length-1;k++){
@@ -1928,36 +2059,31 @@ function calcResults(typed, orig, elapsedSec, onlyEvaluateTyped){
     }
   }
 
+  // correctChars: sum of matched-word lengths, PLUS one character for every
+  // correctly-typed space between two consecutively matched words. Without
+  // the space credit, a perfectly-typed passage (zero mistakes) would still
+  // show well under 100% accuracy and a Net WPM noticeably below Gross WPM —
+  // both should be equal/100% when nothing was mistyped — because roughly
+  // one out of every six typed characters (the space bar presses) would be
+  // silently excluded from "correct" even though the student typed them
+  // right. Only match-match pairs are credited (the space is unambiguously
+  // correct there); spaces adjacent to a substitution/omission/extra aren't
+  // independently verifiable from the word-level diff, so they're left
+  // uncredited rather than guessed at.
   let correctChars=0;
   trimmedOps.forEach((op,k)=>{
     if(skipSet.has(k)) return;
-    if(op.type==='match') correctChars += op.orig.length;
+    if(op.type==='match'){
+      correctChars += op.orig.length;
+      if(k>0 && trimmedOps[k-1].type==='match' && !skipSet.has(k-1)) correctChars += 1;
+    }
   });
 
   // Pass 2: leftover deletes before the last match = mid-passage word skip;
   // deletes at/after the last match = the *unreached tail* of the passage.
-  let lastMatchIdx=-1;
-  trimmedOps.forEach((op,k)=>{ if(op.type==='match') lastMatchIdx=k; });
-
-  // If the student stopped mid-word, the first tail delete that STARTS WITH
-  // whatever partial text they'd typed is a char-level OMISSION, not a
-  // whole missing word — everything else in the tail is still a full word error.
-  let omitCharMistakes = 0;
-  let omitCharsExact = 0;
-  let partialTailIdx = -1;
-  if(endedMidWord){
-    const lastTyped = typedWordsFull[typedWordsFull.length-1];
-    for(let k=lastMatchIdx+1;k<trimmedOps.length;k++){
-      if(skipSet.has(k) || trimmedOps[k].type!=='del') continue;
-      const w = trimmedOps[k].orig;
-      if(w.toLowerCase().startsWith(lastTyped.toLowerCase()) && lastTyped.length>=1){
-        omitCharsExact = w.length - lastTyped.length;
-        omitCharMistakes = Math.floor(omitCharsExact/5);
-        partialTailIdx = k;
-      }
-      break; // only the very first tail word can be the in-progress partial
-    }
-  }
+  // (lastMatchIdx and the partial-tail char-omission were already computed
+  // above, before Pass 0, so Pass 0 couldn't wrongly claim the in-progress
+  // final word as a full-word substitution.)
 
   // These institute passages are intentionally oversized (400+ words) so no
   // typist ever runs out of material — nobody is expected to finish within

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
 <title>Typing Thalaiva</title>
-<meta name="theme-color" content="#1d4ed8">
+<meta name="theme-color" content="#0a0f1c">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,24 +22,57 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
+/* =====================================================================
+   THEME SYSTEM — exactly 3 app-wide themes: Black (default), White, Golden.
+   :root holds the BLACK theme's values (so the app looks right even before
+   any data-theme attribute is applied / for any element outside a themed
+   subtree); [data-theme="black"] repeats the same values explicitly so the
+   dropdown's "Black" option is self-contained and robust to future edits.
+   White and Golden fully override every variable below — nothing is left
+   to accidentally fall back to a mismatched value.
+===================================================================== */
 :root{
-  --bg1:#f8fafc; --bg2:#f1f5f9;
-  --card:#ffffff; --card-bdr:#cbd5e1;
-  --orange:#2563eb; --orange-d:#1d4ed8; --orange-l:#3b82f6;
-  --purple:#1e293b; --purple-d:#0f172a; --purple-pill:#eff6ff; --purple-pill-txt:#1e40af;
-  --green:#10b981; --red:#ef4444; --blue:#3b82f6;
-  --ink:#0f172a; --muted:#64748b;
+  --bg1:#0a0f1c; --bg2:#131d30;
+  --card:#182338; --card-bdr:#2d3b52;
+  --orange:#f5b301; --orange-d:#c98e00; --orange-l:#ffcf40;
+  --purple:#38bdf8; --purple-d:#e6edf5; --purple-pill:#1c2942; --purple-pill-txt:#bfe3fb;
+  --green:#34d399; --red:#f87171; --blue:#60a5fa;
+  --ink:#f5f7fb; --muted:#a9b3c7;
+  --passtext:#cdbf9d;
   --txtfont:'Poppins',sans-serif;
   --tamilfont:'Noto Sans Tamil',sans-serif;
   --typesize:20px;
+  --shadow:0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+}
+[data-theme="black"]{
+  --bg1:#0a0f1c; --bg2:#131d30;
+  --card:#182338; --card-bdr:#2d3b52;
+  --orange:#f5b301; --orange-d:#c98e00; --orange-l:#ffcf40;
+  --purple:#38bdf8; --purple-d:#e6edf5; --purple-pill:#1c2942; --purple-pill-txt:#bfe3fb;
+  --green:#34d399; --red:#f87171; --blue:#60a5fa;
+  --ink:#f5f7fb; --muted:#a9b3c7;
+  --passtext:#cdbf9d;
+  --shadow:0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
+}
+[data-theme="white"]{
+  --bg1:#f8fafc; --bg2:#eef2f7;
+  --card:#ffffff; --card-bdr:#dbe2ea;
+  --orange:#f97316; --orange-d:#c2410c; --orange-l:#fb923c;
+  --purple:#1e293b; --purple-d:#0f172a; --purple-pill:#eff6ff; --purple-pill-txt:#1e40af;
+  --green:#10b981; --red:#ef4444; --blue:#3b82f6;
+  --ink:#0f172a; --muted:#64748b;
+  --passtext:#8b8378;
   --shadow:0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 }
-[data-theme="teal"]{--orange:#0d9488;--orange-d:#0f766e;--orange-l:#2dd4bf;--card-bdr:#cbd5e1;--bg1:#f0fdfa;--bg2:#ccfbf1;}
-[data-theme="blue"]{--orange:#2563eb;--orange-d:#1d4ed8;--orange-l:#3b82f6;--card-bdr:#cbd5e1;--bg1:#eff6ff;--bg2:#dbeafe;}
-[data-theme="black"]{
-  --orange:#fbbf24; --orange-d:#d97706; --orange-l:#fcd34d; --card-bdr:#334155;
-  --bg1:#0f172a; --bg2:#1e293b; --card:#1e293b; --ink:#f8fafc; --muted:#94a3b8;
-  --purple:#38bdf8; --purple-pill:#0f172a; --purple-pill-txt:#e0f2fe;
+[data-theme="golden"]{
+  --bg1:#fdf3d9; --bg2:#f7e4ae;
+  --card:#fffcf2; --card-bdr:#e3c778;
+  --orange:#b8860b; --orange-d:#8a6508; --orange-l:#d4a017;
+  --purple:#7c5710; --purple-d:#5c3f0a; --purple-pill:#fff3d6; --purple-pill-txt:#8a6508;
+  --green:#15803d; --red:#b91c1c; --blue:#8a6a2f;
+  --ink:#3b2b0f; --muted:#8a7350;
+  --passtext:#7a6a4a;
+  --shadow:0 10px 15px -3px rgb(120 90 10 / 0.15), 0 4px 6px -4px rgb(120 90 10 / 0.15);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
@@ -137,8 +170,8 @@ body{
 .rr-head h3{color:var(--orange);font-size:16px;font-weight:800;}
 .rr-actions{display:flex;gap:14px;font-size:12.5px;color:var(--orange);font-weight:700;}
 .rr-actions span{cursor:pointer;display:flex;align-items:center;gap:3px;}
-.rr-list{background:#fff;border:1.5px solid var(--card-bdr);border-radius:14px;padding:12px 14px;min-height:44px;color:var(--muted);font-size:13.5px;}
-.rr-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed #e6d9c6;font-size:13px;color:var(--ink);}
+.rr-list{background:var(--card);border:1.5px solid var(--card-bdr);border-radius:14px;padding:12px 14px;min-height:44px;color:var(--muted);font-size:13.5px;}
+.rr-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed var(--card-bdr);font-size:13px;color:var(--ink);}
 .rr-row:last-child{border-bottom:none;}
 .rr-row b{color:var(--orange);}
 
@@ -155,21 +188,21 @@ body{
 .backbtn{position:absolute;top:18px;left:14px;background:none;border:none;color:var(--orange);font-weight:700;font-size:13px;cursor:pointer;z-index:5;}
 .kbbadge{display:inline-block;background:rgba(255,255,255,.18);border-radius:10px;padding:2px 9px;font-size:10.5px;font-weight:700;letter-spacing:.5px;margin-top:3px;}
 
-.passcard{background:#fff;border:1.5px solid var(--card-bdr);border-radius:14px;padding:14px 16px;margin-bottom:10px;max-height:230px;overflow-y:auto;scroll-behavior:smooth;}
+.passcard{background:var(--card);border:1.5px solid var(--card-bdr);border-radius:14px;padding:14px 16px;margin-bottom:10px;max-height:230px;overflow-y:auto;scroll-behavior:smooth;}
 .modelabel{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
-#passDisplay{font-family:'Courier New',monospace;font-size:var(--typesize);line-height:1.9;color:#8b8378;white-space:pre-wrap;word-break:break-word;}
+#passDisplay{font-family:'Courier New',monospace;font-size:var(--typesize);line-height:1.9;color:var(--passtext);white-space:pre-wrap;word-break:break-word;}
 #passDisplay.tamil{font-family:var(--tamilfont);}
 #passDisplay.layout-typewriter{letter-spacing:.4px;font-weight:500;}
 #passDisplay .w-ok{color:var(--green);}
 #passDisplay .w-bad{color:var(--red);text-decoration:underline wavy;}
-#passDisplay .w-cur.highlight{background:#ffe9c7;border-radius:3px;}
+#passDisplay .w-cur.highlight{background:#ffe9c7;color:#3b2b0f;border-radius:3px;}
 #passDisplay .w-cur.underline{text-decoration:underline;text-decoration-color:var(--orange);}
 #passDisplay .w-prev{opacity:.55;}
 
 /* ---- LINE mode: single-line "type-runner" strip, horizontal scroll, faded edges ---- */
 .passcard.mode-line{
   max-height:none;height:3.6em;overflow-x:auto;overflow-y:hidden;display:flex;align-items:center;
-  background:linear-gradient(180deg,#fffdf9,#fff6ea);border-color:var(--orange-l);
+  background:var(--card);border-color:var(--orange-l);
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
   mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
   scrollbar-width:none;
@@ -187,11 +220,11 @@ body{
 
 /* ---- PAGE mode: full page you can read ahead on, book-style ---- */
 .passcard.mode-page{
-  max-height:360px;background:#fffdf8;
-  box-shadow:inset 0 0 0 1px #f1e6cf, var(--shadow);
+  max-height:360px;background:var(--card);
+  box-shadow:inset 0 0 0 1px var(--card-bdr), var(--shadow);
 }
 
-.typewrap{background:#fff;border:2px solid var(--card-bdr);border-radius:14px;padding:4px;margin-bottom:12px;}
+.typewrap{background:var(--card);border:2px solid var(--card-bdr);border-radius:14px;padding:4px;margin-bottom:12px;}
 .typewraplabel{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:2px 0 4px 2px;}
 #typingArea{
   width:100%;min-height:130px;border:none;outline:none;resize:none;background:transparent;
@@ -243,13 +276,13 @@ body{
 .resheader .pos{color:#c7ffd8;}
 .resheader .neg{color:#ffd2ce;}
 
-.graphcard{background:#fff;border:2px solid var(--card-bdr);border-radius:14px;padding:10px 8px;margin-bottom:14px;}
+.graphcard{background:var(--card);border:2px solid var(--card-bdr);border-radius:14px;padding:10px 8px;margin-bottom:14px;}
 .graphcard canvas{width:100%;display:block;}
 .legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);padding:4px 8px 0;}
 .legend .sq{width:9px;height:9px;background:var(--green);display:inline-block;border-radius:2px;}
 
 .comparewrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
-.comparecol{background:#fff;border:1.5px solid #eadfce;border-radius:12px;padding:10px;font-size:13px;line-height:1.8;max-height:260px;overflow-y:auto;font-family:'Courier New',monospace;}
+.comparecol{background:var(--card);border:1.5px solid var(--card-bdr);border-radius:12px;padding:10px;font-size:13px;line-height:1.8;max-height:260px;overflow-y:auto;font-family:'Courier New',monospace;}
 .comparecol.tamil{font-family:var(--tamilfont);}
 .comparecol h4{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
 .comparecol .ok{color:var(--green);}
@@ -257,7 +290,7 @@ body{
 .comparecol .extra{color:var(--blue);font-weight:700;}
 
 .statsgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
-.statbox{background:#fff;border:1.5px solid #eadfce;border-radius:12px;padding:10px 12px;}
+.statbox{background:var(--card);border:1.5px solid var(--card-bdr);border-radius:12px;padding:10px 12px;}
 .statbox .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
 .statbox .v{font-size:18px;font-weight:800;color:var(--orange);margin-top:2px;}
 .statbox .cap{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.3;}
@@ -281,11 +314,11 @@ body{
 .prac-chip{flex:0 0 auto;background:var(--purple-pill);color:var(--purple-pill-txt);border:none;border-radius:16px;padding:8px 14px;font-size:12.5px;font-weight:700;white-space:nowrap;cursor:pointer;}
 .prac-chip.on{background:var(--orange);color:#fff;}
 .prac-sub{font-size:12.5px;color:var(--muted);margin-bottom:10px;}
-.prac-extext{background:#fff;border:2px solid var(--card-bdr);border-radius:14px;padding:14px 16px;margin-bottom:10px;max-height:180px;overflow-y:auto;font-family:'Courier New',monospace;font-size:calc(var(--typesize) - 2px);line-height:1.9;white-space:pre-wrap;color:#8b8378;}
+.prac-extext{background:var(--card);border:2px solid var(--card-bdr);border-radius:14px;padding:14px 16px;margin-bottom:10px;max-height:180px;overflow-y:auto;font-family:'Courier New',monospace;font-size:calc(var(--typesize) - 2px);line-height:1.9;white-space:pre-wrap;color:var(--passtext);}
 .prac-extext.tamil{font-family:var(--tamilfont);}
 .prac-extext .pc-ok{color:var(--green);}
 .prac-extext .pc-bad{color:var(--red);text-decoration:underline wavy;}
-.prac-extext .pc-cur{background:#ffe9c7;border-radius:2px;}
+.prac-extext .pc-cur{background:#ffe9c7;color:#3b2b0f;border-radius:2px;}
 #practiceInput{
   width:100%;min-height:110px;border:none;outline:none;resize:none;background:transparent;
   font-family:'Courier New',monospace;font-size:calc(var(--typesize) - 2px);line-height:1.9;color:var(--ink);padding:12px;scroll-behavior:smooth;
@@ -312,17 +345,17 @@ body{
 .hdr-avatar{width:34px;height:34px;border-radius:50%;overflow:hidden;border:2px solid #0d9488;cursor:pointer;flex:0 0 auto;background:#e6f4f2;}
 .hdr-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
 .streak-badge{
-  display:flex;align-items:center;gap:4px;background:#fff;border:1px solid #cbd5e1;border-radius:20px;
+  display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--card-bdr);border-radius:20px;
   padding:5px 10px;font-size:11.5px;font-weight:700;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.03);
 }
 .streak-badge .flame{color:#f97316;font-size:13px;}
 .notif-bell{
-  background:#fff;border:1px solid #cbd5e1;border-radius:50%;width:32px;height:32px;
+  background:var(--card);border:1px solid var(--card-bdr);border-radius:50%;width:32px;height:32px;
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);
   box-shadow:0 1px 3px rgba(0,0,0,.03);position:relative;
 }
 .notif-bell::after{
-  content:'';position:absolute;top:3px;right:3px;width:7px;height:7px;background:#ef4444;border-radius:50%;border:1.5px solid #fff;
+  content:'';position:absolute;top:3px;right:3px;width:7px;height:7px;background:#ef4444;border-radius:50%;border:1.5px solid var(--card);
 }
 
 /* Profile Card */
@@ -361,7 +394,7 @@ body{
 
 /* Continue Practice Card */
 .continue-card{
-  background:#fff;border:1px solid #cbd5e1;border-radius:18px;padding:16px 18px;margin-bottom:14px;
+  background:var(--card);border:1px solid var(--card-bdr);border-radius:18px;padding:16px 18px;margin-bottom:14px;
   box-shadow:var(--shadow);position:relative;overflow:hidden;
 }
 .continue-card-body{display:flex;justify-content:space-between;align-items:center;}
@@ -392,7 +425,7 @@ body{
 /* Quick Practice Grid */
 .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
 .quick-card{
-  background:#fff;border:1.5px solid var(--card-bdr);border-radius:14px;padding:10px 4px;
+  background:var(--card);border:1.5px solid var(--card-bdr);border-radius:14px;padding:10px 4px;
   display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;
   transition:transform .12s,border-color .15s;text-align:center;position:relative;
 }
@@ -415,7 +448,7 @@ body{
 /* Today's Stats Grid */
 .today-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
 .stat-mini-card{
-  background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:8px 4px;
+  background:var(--card);border:1px solid var(--card-bdr);border-radius:12px;padding:8px 4px;
   display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.02);
 }
 .stat-mini-card .stat-ic{font-size:16px;}
@@ -463,7 +496,7 @@ body{
 .tab-content.active{display:block;}
 
 /* Extra style fixes */
-.comparecol{background:#fff;border:1px solid var(--card-bdr);box-shadow:var(--shadow);}
+.comparecol{background:var(--card);border:1px solid var(--card-bdr);box-shadow:var(--shadow);}
 
 /* ---- Mistakes Breakdown card (dark, matches institute report format) ---- */
 .mb-card{background:#171310;border:1.5px solid #332c1f;border-radius:14px;padding:16px 16px 8px;margin-bottom:14px;font-family:'Courier New',monospace;}
@@ -497,14 +530,14 @@ body{
 .cmp2-text .tail-ignored{color:#5c5647;font-style:italic;}
 .cmp2-text .extra{color:#6fb4ff;font-weight:700;}
 @media (max-width: 480px){ .cmp2-grid{flex-direction:column;} }
-.statbox{background:#fff;border:1px solid var(--card-bdr);box-shadow:var(--shadow);}
+.statbox{background:var(--card);border:1px solid var(--card-bdr);box-shadow:var(--shadow);}
 .statbox .v{color:var(--orange);}
 .resheader{background:linear-gradient(135deg,var(--orange) 0%,var(--orange-d) 100%);}
 .testtop{background:linear-gradient(135deg,var(--orange) 0%,var(--orange-d) 100%);}
 .modalcard{border:1px solid var(--card-bdr);box-shadow:var(--shadow);}
 </style>
 </head>
-<body data-theme="orange">
+<body data-theme="black">
 
 <div id="splashScreen" style="position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#1d4ed8,#0f172a);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;">
   <svg width="72" height="72" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:splashPulse 1.1s ease-in-out infinite;">
@@ -818,9 +851,9 @@ body{
           <label class="chkitem">
             Theme:
             <select class="dd" id="ddTheme" style="margin-left:4px;">
-              <option value="teal">Teal</option>
-              <option value="blue" selected>Blue</option>
-              <option value="black">Black</option>
+              <option value="black" selected>Black</option>
+              <option value="white">White</option>
+              <option value="golden">Golden</option>
             </select>
           </label>
           <label class="chkitem" style="grid-column:2/3;">
@@ -1450,6 +1483,18 @@ function startTest(m){
   $('panelHeadStatus').textContent = 'Waiting for first keystroke…';
 
   renderPassage('');
+  // Every attempt (fresh start, Cancel->restart, "Try Again", or a newly
+  // loaded passage) funnels through startTest(), so resetting the passage
+  // panel's scroll position here — right after it's freshly rendered —
+  // covers all of those cases in one place. Without this, the panel kept
+  // whatever scroll position was left over from the PREVIOUS attempt (e.g.
+  // scrolled deep into a long passage), forcing the student to manually
+  // scroll back up/left before they could even see the start of the new
+  // attempt. Reset both axes; a plain (non-smooth) jump so it's instant and
+  // never visibly fights with renderPassage's own auto-scroll-to-current-
+  // word behavior, which only kicks in once actual typing begins.
+  $('passCard').scrollTop = 0;
+  $('passCard').scrollLeft = 0;
   updateTimerDisplay(timeLimitSecs);
   $('timerBox').className = 'timerbox';
   $('liveWpm').textContent = '0';
@@ -1457,6 +1502,20 @@ function startTest(m){
   $('liveChars').textContent = '0';
 
   showScreen('screen-test');
+  // The reset above runs while #passCard may still be hidden/mid-layout
+  // (screen-test isn't shown yet at that point), which on some mobile
+  // browsers means the scrollTop/scrollLeft=0 doesn't reliably "stick" once
+  // the panel actually becomes visible and gets its real layout/height.
+  // Re-apply the reset on the next two animation frames (after showScreen
+  // has flipped visibility and the browser has had a chance to lay out and
+  // paint), which is the standard way to win against that kind of
+  // visibility/layout race without touching typing/timer/cursor logic.
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      $('passCard').scrollTop = 0;
+      $('passCard').scrollLeft = 0;
+    });
+  });
   setTimeout(()=>$('typingArea').focus(), 80);
 }
 
@@ -1510,6 +1569,18 @@ function renderPassage(typed){
   // current word centered. Page mode scrolls too (up or down), but only when
   // the current word actually falls outside the visible area, so normal
   // reading/scanning within the page isn't interrupted.
+  //
+  // Guard: skip all of this when curWordIdx === 0 (nothing typed yet, i.e. a
+  // fresh/just-reset attempt). Centering word #0 vertically/horizontally in
+  // the container is exactly what made a brand new paragraph appear to start
+  // from line 2 (or a mid-scrolled position) instead of the very top/left —
+  // the centering math scrolls the container down/right to put word 0 in the
+  // middle, then an async 'smooth' animation for that scroll can land AFTER
+  // startTest()'s scrollTop/scrollLeft=0 reset (especially on mobile, where
+  // layout/paint timing differs), silently overriding it. Once the user has
+  // actually typed something (curWordIdx > 0), auto-centering is exactly the
+  // desired behavior and runs as before.
+  if(curWordIdx === 0) return;
   if(mode === 'line'){
     const curEl = $('passDisplay').querySelector('.w-cur');
     smoothScrollToCurrentH($('passCard'), curEl);

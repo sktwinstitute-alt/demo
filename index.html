@@ -1680,7 +1680,23 @@ function tamilCharKey(taEl, composer, layout, c){
   // — NOT restart from a bare "இ"). Try shrinking the buffered prefix down
   // to each of its own trailing, independently-resolvable sub-sequences
   // (shortest reduction first) and see if THAT plus the new key resolves.
-  if(wasComposing){
+  //
+  // This must NOT run when composer.raw is currently sitting on a "plateau"
+  // — a multi-key atomic builder path (e.g. Typewriter's disjointed-Ksha
+  // sequence ";f" -> ";fb" -> ";fbZ" -> க்ஷெ) where the last keystroke was
+  // a silent pass-through that left the visible text unchanged. In that
+  // state, the raw string's trailing character (e.g. the "b" in ";fb") may
+  // *coincidentally* also be a valid standalone key elsewhere in the map,
+  // making the tail-reduction below "find a match" that has nothing to do
+  // with what's actually on screen — and then wipe out real, already-typed
+  // content (e.g. deleting an already-composed pulli consonant) to make
+  // room for it. Detect a plateau by checking whether the immediately
+  // shorter raw sequence already mapped to the exact same visible output.
+  const prevRaw = composer.raw.slice(0, -1);
+  const onPlateau = wasComposing && prevRaw !== '' &&
+    Object.prototype.hasOwnProperty.call(map, prevRaw) &&
+    map[prevRaw] === map[composer.raw];
+  if(wasComposing && !onPlateau){
     for(let k=1;k<=composer.raw.length;k++){
       const tail = composer.raw.slice(composer.raw.length-k);
       if(!Object.prototype.hasOwnProperty.call(map, tail)) continue;
@@ -1720,7 +1736,16 @@ function tamilCharKey(taEl, composer, layout, c){
   // leading (prefix) sub-sequence, then tries combining THAT with the new
   // key. Try the longest valid prefix first so we recover as much of the
   // original consonant as possible.
-  if(wasComposing){
+  //
+  // Skipped on a plateau for the same reason as the tail-reduction above:
+  // e.g. after Tamil99's soft/hard-consonant-pair rule confirms with "a"
+  // (";la" -> ";l" both = "ந்த" — the "a" delinks/finalizes the syllable
+  // per the official Tamil99 spec, rule 6), the raw string's OWN leading
+  // substring (";" here) may coincidentally also be a real map key
+  // elsewhere and combine into some unrelated candidate — wiping out the
+  // already-finalized, correct syllable to make room for it. A finalized
+  // plateau must stay untouched; the new key starts its own fresh unit.
+  if(wasComposing && !onPlateau){
     for(let k=composer.raw.length-1;k>=1;k--){
       const head = composer.raw.slice(0,k);
       if(!Object.prototype.hasOwnProperty.call(map, head)) continue;
@@ -1788,6 +1813,18 @@ let lastTASelection = 0;
 
 ['click', 'keyup', 'select', 'focus'].forEach(evt => {
   TA.addEventListener(evt, () => {
+    // If the cursor is somewhere OTHER than where our own last edit left it,
+    // the student tapped/clicked/arrow-keyed to a different spot in the text
+    // (extremely common on mobile — tapping back to check or fix something).
+    // The composer (mainComposer.raw/outLen) was mid-way through building a
+    // Tamil syllable for the OLD position; if left as-is, the very next
+    // keystroke would think it's still continuing that syllable and would
+    // delete/overwrite characters at the NEW cursor position instead —
+    // corrupting whatever word happens to be sitting there. Reset it so a
+    // fresh syllable starts cleanly wherever the student actually is now.
+    if(TA.selectionStart !== lastTASelection && CFG.lang === 'ta'){
+      mainComposer.raw = ''; mainComposer.outLen = 0;
+    }
     lastTAValue = TA.value;
     lastTASelection = TA.selectionStart;
   });
@@ -2724,6 +2761,13 @@ let lastPISelection = 0;
 
 ['click', 'keyup', 'select', 'focus'].forEach(evt => {
   PI.addEventListener(evt, () => {
+    // Same reasoning as the main test's typing area (see there for the full
+    // explanation): reset the composer if the cursor lands somewhere other
+    // than where our own last edit left it, so a stray tap/click doesn't
+    // corrupt unrelated text on the next keystroke.
+    if(PI.selectionStart !== lastPISelection && pracLang === 'ta'){
+      pracComposer.raw = ''; pracComposer.outLen = 0;
+    }
     lastPIValue = PI.value;
     lastPISelection = PI.selectionStart;
   });

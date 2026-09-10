@@ -535,6 +535,63 @@ body{
 .resheader{background:linear-gradient(135deg,var(--orange) 0%,var(--orange-d) 100%);}
 .testtop{background:linear-gradient(135deg,var(--orange) 0%,var(--orange-d) 100%);}
 .modalcard{border:1px solid var(--card-bdr);box-shadow:var(--shadow);}
+
+/* ---------- LANDSCAPE: expand the typing test to fill the screen ---------- */
+@media (orientation: landscape) and (max-height: 560px){
+  body:has(#screen-test.active) .app{
+    max-width:100%;
+    width:100%;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:calc(8px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+  }
+  #screen-test.screen.active{
+    display:flex;
+    flex-direction:column;
+    flex:1 1 auto;
+    min-height:0;
+  }
+  #screen-test .backbtn{ position:static; margin-bottom:2px; align-self:flex-start; }
+  #screen-test > div[style*="height:26px"]{ display:none; }
+  #screen-test .testtop{ padding:8px 16px; margin-bottom:8px; flex:0 0 auto; }
+  #screen-test .timerbox{ font-size:22px; }
+  #screen-test .modelabel{ margin-bottom:4px; flex:0 0 auto; }
+  #screen-test .testpanels{
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    flex-direction:row;
+    gap:10px;
+  }
+  #screen-test .passcard{
+    flex:1 1 42%;
+    min-width:0;
+    max-height:none;
+    height:100%;
+    margin-bottom:0;
+  }
+  #screen-test .passcard.mode-line{ height:100%; align-items:center; }
+  #screen-test .typewrap{
+    flex:1 1 58%;
+    min-width:0;
+    margin-bottom:0;
+    display:flex;
+    flex-direction:column;
+    height:100%;
+  }
+  #screen-test #typingArea{
+    flex:1 1 auto;
+    min-height:0;
+    height:100%;
+  }
+  #screen-test .testpanels.mode-parallel .passcard,
+  #screen-test .testpanels.mode-parallel .typewrap{
+    max-height:none;
+    height:100%;
+  }
+  #screen-test .testbtnrow{ flex:0 0 auto; margin-top:8px; }
+}
 </style>
 </head>
 <body data-theme="black">

@@ -1824,7 +1824,15 @@ function tamilCharKey(taEl, composer, layout, c){
   const onPlateau = wasComposing && prevRaw !== '' &&
     Object.prototype.hasOwnProperty.call(map, prevRaw) &&
     map[prevRaw] === map[composer.raw];
-  if(wasComposing && !onPlateau){
+  // SAFETY GUARD (fixes silent data loss): both reduction fallbacks below
+  // are only valid while the syllable currently on screen is still "open"
+  // per Tamil99 rules — a bare consonant, or a consonant+pulli — never one
+  // that already carries its own independent vowel sign. A finished,
+  // vowel-bearing syllable must never be reduced/rewritten just because an
+  // unrelated later keystroke coincidentally matches part of its raw keys.
+  const TA99_VOWEL_SIGN = /[\u0BBE-\u0BCC\u0BD7]/;
+  const rawFullyOpen = !TA99_VOWEL_SIGN.test(map[composer.raw] || '');
+  if(wasComposing && !onPlateau && rawFullyOpen){
     for(let k=1;k<=composer.raw.length;k++){
       const tail = composer.raw.slice(composer.raw.length-k);
       if(!Object.prototype.hasOwnProperty.call(map, tail)) continue;
@@ -1873,7 +1881,17 @@ function tamilCharKey(taEl, composer, layout, c){
   // elsewhere and combine into some unrelated candidate — wiping out the
   // already-finalized, correct syllable to make room for it. A finalized
   // plateau must stay untouched; the new key starts its own fresh unit.
-  if(wasComposing && !onPlateau){
+  // SAFETY GUARD (fixes silent data loss): only ever attempt this
+  // head-reduction correction while the syllable currently on screen is
+  // still "open" per Tamil99 rules — a bare consonant or a consonant+pulli,
+  // never a consonant that already carries its own independent vowel sign.
+  // Once a vowel sign has been composed, the syllable is CLOSED and the
+  // Tamil99 spec always starts a fresh letter on the next key; without this
+  // check, a finished syllable like "தி" could be silently deleted and
+  // replaced by an unrelated candidate (e.g. a doubled-consonant form)
+  // just because some earlier substring of its raw keys happened to
+  // coincide with the start of the next, unrelated letter.
+  if(wasComposing && !onPlateau && rawFullyOpen){
     for(let k=composer.raw.length-1;k>=1;k--){
       const head = composer.raw.slice(0,k);
       if(!Object.prototype.hasOwnProperty.call(map, head)) continue;
@@ -1971,46 +1989,76 @@ TA.addEventListener('input', e=>{
     return;
   }
 
+  const oldVal = lastTAValue;
   const newVal = TA.value;
-  const newSel = TA.selectionStart;
 
-  if(newVal.length > lastTAValue.length){
-    // Character insertion occurred — may be MORE THAN ONE character if the
-    // browser batched several keystrokes into a single input event (this
-    // happens on fast/continuous typing). Extract the FULL inserted run,
-    // not just the last char, or earlier keystrokes get silently dropped.
-    const insLen = newVal.length - lastTAValue.length;
-    const inserted = newVal.slice(newSel - insLen, newSel);
-    TA.value = lastTAValue;
+  if(newVal === oldVal){
     TA.setSelectionRange(lastTASelection, lastTASelection);
+    lastTASelection = TA.selectionStart;
+    return;
+  }
 
-    if(inserted){
-      if(!started) startTimer();
-      for(const char of inserted){
-        if(CFG.lang === 'ta') tamilCharKey(TA, mainComposer, CFG.layout, char);
-        else insertPlain(TA, char);
-      }
-      onTypingChanged();
-    }
-  } else if(newVal.length < lastTAValue.length){
-    // Deletion occurred
-    TA.value = lastTAValue;
-    TA.setSelectionRange(lastTASelection, lastTASelection);
+  // ROOT-CAUSE FIX: the previous logic assumed every browser edit was a pure
+  // append that lands exactly at the new caret position (`newSel - insLen`
+  // .. `newSel`). That assumption breaks the moment the browser/IME does
+  // ANYTHING else in a single 'input' event — batching several fast
+  // keystrokes together, autocorrect/predictive-text rewriting a span,
+  // or a compound edit from a mobile keyboard — because none of those are
+  // "insert N chars right before the caret". When it broke, the wrong slice
+  // of text got extracted and fed into the Tamil composer, which then
+  // desynced from what was actually on screen: exactly the dropped
+  // characters, vanishing completed words, and cursor/text mismatches
+  // reported. Diffing oldVal vs newVal by common PREFIX and common SUFFIX
+  // instead finds the true changed region no matter where or how it
+  // happened, so the existing composer/backspace engine below (unchanged)
+  // always receives the real, correctly-ordered keystrokes.
+  let prefixLen = 0;
+  const maxPrefix = Math.min(oldVal.length, newVal.length);
+  while(prefixLen < maxPrefix && oldVal[prefixLen] === newVal[prefixLen]) prefixLen++;
 
-    backspaceCount++;
-    if(CFG.lockBackspace) {
-      // do nothing
-    } else {
+  let oldEnd = oldVal.length, newEnd = newVal.length;
+  while(oldEnd > prefixLen && newEnd > prefixLen && oldVal[oldEnd-1] === newVal[newEnd-1]){
+    oldEnd--; newEnd--;
+  }
+
+  const removedLen = oldEnd - prefixLen;         // chars removed from oldVal
+  const insertedStr = newVal.slice(prefixLen, newEnd); // chars inserted in their place
+
+  // Revert the textarea to the last known-good state; every real change is
+  // re-applied through the SAME per-character composer/backspace paths used
+  // for ordinary keystrokes, so nothing downstream needs to special-case how
+  // the edit arrived.
+  TA.value = lastTAValue;
+  TA.setSelectionRange(lastTASelection, lastTASelection);
+
+  const doDelete = (n)=>{
+    for(let i=0;i<n;i++){
+      backspaceCount++;
+      if(CFG.lockBackspace) continue;
       if(CFG.lang === 'ta') tamilBackspace(TA, mainComposer, CFG.layout);
       else {
         const pos = TA.selectionStart;
         if(pos>0){ TA.value = TA.value.slice(0,pos-1)+TA.value.slice(pos); TA.setSelectionRange(pos-1,pos-1); }
       }
     }
+  };
+  const doInsert = (str)=>{
+    if(!str) return;
+    if(!started) startTimer();
+    for(const char of str){
+      if(CFG.lang === 'ta') tamilCharKey(TA, mainComposer, CFG.layout, char);
+      else insertPlain(TA, char);
+    }
+  };
+
+  if(removedLen > 0 || insertedStr.length > 0){
+    // Move the (reverted) caret to where the change actually starts before
+    // replaying it — needed for deletions/replacements that aren't at the
+    // very end of the text (e.g. caret moved back on-screen, then edited).
+    TA.setSelectionRange(oldEnd, oldEnd);
+    doDelete(removedLen);
+    doInsert(insertedStr);
     onTypingChanged();
-  } else {
-    TA.value = lastTAValue;
-    TA.setSelectionRange(lastTASelection, lastTASelection);
   }
 
   lastTAValue = TA.value;

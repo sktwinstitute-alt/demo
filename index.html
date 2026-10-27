@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
 <title>Typing Thalaiva</title>
-<meta name="theme-color" content="#0a0f1c">
+<meta name="theme-color" content="#f8fafc">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,6 +16,44 @@
     -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
   input,textarea{ -webkit-user-select:text; user-select:text; }
   ::-webkit-scrollbar{ display:none; }
+
+/* ===== PDF-style result report (always light, same on screen and in PDF) ===== */
+#resultsCapture > :not(#reportCard){display:none!important;}
+.rp{background:#fff;color:#111;font-family:Arial,Helvetica,'Noto Sans Tamil',sans-serif;padding:14px;border-radius:12px;}
+.rp *{box-sizing:border-box;}
+.rp-head{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;border-radius:12px;padding:14px 18px;margin-bottom:14px;}
+.rp-head h2{font-size:18px;font-weight:700;margin:0 0 3px;}
+.rp-head div{font-size:12px;opacity:.9;}
+.rp-tbl{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:13px;}
+.rp-tbl td{border:1px solid #ddd;padding:8px 10px;}
+.rp-tbl td:first-child{font-weight:700;width:38%;}
+.rp-badge{display:inline-block;border:1.5px solid;border-radius:20px;padding:4px 14px;font-weight:800;font-size:12px;letter-spacing:.8px;}
+.rp-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.rp-chip{border-radius:10px;color:#fff;text-align:center;padding:9px 10px;min-width:74px;flex:0 0 auto;}
+.rp-chip b{display:block;font-size:20px;line-height:1.1;}
+.rp-chip span{font-size:10px;text-transform:uppercase;}
+.rp-chip.bs{background:#fff0f3;border:2px solid #ff6b81;color:#ff3b5c;}
+.rp-verdict{border:2px solid;border-radius:10px;padding:12px;text-align:center;font-weight:800;font-size:17px;line-height:1.5;margin-bottom:14px;}
+.rp-sec{font-size:11.5px;font-weight:800;letter-spacing:1.3px;color:#555;text-transform:uppercase;border-left:5px solid #7c3aed;padding-left:8px;margin:6px 0 6px;}
+.rp-leg{font-size:11.5px;color:#444;margin-bottom:8px;}
+.rp-cols{display:flex;gap:14px;align-items:flex-start;}
+.rp-col{flex:1 1 50%;min-width:0;}
+.rp-lab{font-size:11px;color:#555;text-transform:uppercase;margin-bottom:4px;}
+.rp-box{border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:16px;line-height:2;word-break:break-word;color:#111;background:#fff;max-height:340px;overflow-y:auto;}
+.rp-box.ta{font-family:'Noto Sans Tamil',Arial,sans-serif;}
+.rp-box:not(.ta){font-family:'Courier New',monospace;font-size:14px;}
+.rp-box .rc{display:inline-block;min-width:1.5em;height:1.5em;line-height:1.4em;text-align:center;border:1.5px solid #dc2626;border-radius:50%;color:#dc2626;font-size:.8em;font-weight:700;margin:0 1px;background:#fff0f0;}
+.rp-box .rm{text-decoration:underline;text-decoration-color:#dc2626;text-decoration-thickness:2px;}
+.rp-box .rt{color:#6b7280;text-decoration:underline dotted #9ca3af;}
+.rp-leg .rc{display:inline-block;width:14px;height:14px;border:1.5px solid #dc2626;border-radius:50%;vertical-align:middle;}
+.rp-leg u{text-decoration-color:#dc2626;text-decoration-thickness:2px;}
+.rp-weak{width:230px;border-collapse:collapse;font-size:14px;margin-bottom:10px;}
+.rp-weak td{border:1px solid #ddd;padding:5px 10px;}
+.rp-note{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:9px 12px;font-size:12.5px;color:#7c2d12;}
+.rp.pdfmode{width:794px;max-width:none;}
+.rp.pdfmode .rp-box{max-height:none;overflow:visible;}
+@media (max-width:520px){.rp:not(.pdfmode) .rp-cols{flex-direction:column;}.rp:not(.pdfmode) .rp-col{width:100%;flex:none;}}
+#btnFullscreen::after{display:none;}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,17 +70,17 @@
    to accidentally fall back to a mismatched value.
 ===================================================================== */
 :root{
-  --bg1:#0a0f1c; --bg2:#131d30;
-  --card:#182338; --card-bdr:#2d3b52;
-  --orange:#f5b301; --orange-d:#c98e00; --orange-l:#ffcf40;
-  --purple:#38bdf8; --purple-d:#e6edf5; --purple-pill:#1c2942; --purple-pill-txt:#bfe3fb;
-  --green:#34d399; --red:#f87171; --blue:#60a5fa;
-  --ink:#f5f7fb; --muted:#a9b3c7;
-  --passtext:#cdbf9d;
+  --bg1:#f8fafc; --bg2:#eef2f7;
+  --card:#ffffff; --card-bdr:#dbe2ea;
+  --orange:#f97316; --orange-d:#c2410c; --orange-l:#fb923c;
+  --purple:#1e293b; --purple-d:#0f172a; --purple-pill:#eff6ff; --purple-pill-txt:#1e40af;
+  --green:#10b981; --red:#ef4444; --blue:#3b82f6;
+  --ink:#0f172a; --muted:#64748b;
+  --passtext:#1e293b;
+  --shadow:0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
   --txtfont:'Poppins',sans-serif;
   --tamilfont:'Noto Sans Tamil',sans-serif;
   --typesize:20px;
-  --shadow:0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
 }
 [data-theme="black"]{
   --bg1:#0a0f1c; --bg2:#131d30;
@@ -51,7 +89,7 @@
   --purple:#38bdf8; --purple-d:#e6edf5; --purple-pill:#1c2942; --purple-pill-txt:#bfe3fb;
   --green:#34d399; --red:#f87171; --blue:#60a5fa;
   --ink:#f5f7fb; --muted:#a9b3c7;
-  --passtext:#cdbf9d;
+  --passtext:#eef2f8;
   --shadow:0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.35);
 }
 [data-theme="white"]{
@@ -61,7 +99,7 @@
   --purple:#1e293b; --purple-d:#0f172a; --purple-pill:#eff6ff; --purple-pill-txt:#1e40af;
   --green:#10b981; --red:#ef4444; --blue:#3b82f6;
   --ink:#0f172a; --muted:#64748b;
-  --passtext:#8b8378;
+  --passtext:#1e293b;
   --shadow:0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
 }
 [data-theme="golden"]{
@@ -71,7 +109,7 @@
   --purple:#7c5710; --purple-d:#5c3f0a; --purple-pill:#fff3d6; --purple-pill-txt:#8a6508;
   --green:#15803d; --red:#b91c1c; --blue:#8a6a2f;
   --ink:#3b2b0f; --muted:#8a7350;
-  --passtext:#7a6a4a;
+  --passtext:#4a3a1a;
   --shadow:0 10px 15px -3px rgb(120 90 10 / 0.15), 0 4px 6px -4px rgb(120 90 10 / 0.15);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -213,7 +251,7 @@ body{
 /* ---- SCROLLING mode: teleprompter, several lines, fixed window, fade top/bottom ---- */
 .passcard.mode-scrolling{
   max-height:none;height:8.6em;overflow:hidden;position:relative;
-  background:linear-gradient(180deg,#fbfbff,#f5f7ff);
+  background:var(--card);
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 14%,#000 86%,transparent);
   mask-image:linear-gradient(180deg,transparent,#000 14%,#000 86%,transparent);
 }
@@ -594,7 +632,7 @@ body{
 }
 </style>
 </head>
-<body data-theme="black">
+<body data-theme="white">
 
 <div id="splashScreen" style="position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#1d4ed8,#0f172a);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease;">
   <svg width="72" height="72" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:splashPulse 1.1s ease-in-out infinite;">
@@ -645,6 +683,7 @@ body{
           <div class="streak-badge">
             <span class="flame">🔥</span> <span id="hdrStreakVal">7</span>
           </div>
+          <div class="notif-bell" id="btnFullscreen" onclick="toggleFullscreen()" title="Full screen" role="button" aria-label="Full screen" style="font-size:17px;font-weight:700;">⛶</div>
           <div class="notif-bell" onclick="toast('No new notifications')">🔔</div>
           <div class="hdr-avatar" id="hdrAvatarWrap" onclick="openAvatarPicker()" title="Update photo">
             <img id="hdrAvatarImg" alt="Profile" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230d9488'/%3E%3Cpath d='M14 54C14 46 22 42 32 42C42 42 50 46 50 54' fill='%233b82f6' stroke='%23fff' stroke-width='2'/%3E%3Ccircle cx='32' cy='28' r='14' fill='%23fed7aa'/%3E%3Cpath d='M20 22C20 16 26 12 32 12C38 12 44 16 44 22V24H20V22Z' fill='%231e293b'/%3E%3C/svg%3E">
@@ -884,6 +923,14 @@ body{
           </select>
         </div>
 
+        <div class="field selwrap">
+          <label>Exam Category:</label>
+          <select id="selCategory">
+            <option value="coa" selected>COA (50 marks)</option>
+            <option value="typing">Typing (100 marks)</option>
+          </select>
+        </div>
+
         <div class="field">
           <label>Time Limit:</label>
           <div class="radiorow" id="timeRadios">
@@ -908,8 +955,8 @@ body{
           <label class="chkitem">
             Theme:
             <select class="dd" id="ddTheme" style="margin-left:4px;">
-              <option value="black" selected>Black</option>
-              <option value="white">White</option>
+              <option value="white" selected>White</option>
+              <option value="black">Black</option>
               <option value="golden">Golden</option>
             </select>
           </label>
@@ -1010,6 +1057,7 @@ body{
         <div>WPM <b id="liveWpm">0</b></div>
         <div>Words <b id="liveWords">0</b></div>
         <div>Chars <b id="liveChars">0</b></div>
+        <div>Backspace <b id="liveBack">0</b></div>
       </div>
     </div>
 
@@ -1036,6 +1084,7 @@ body{
   <!-- ===================== RESULTS SCREEN ===================== -->
   <section class="screen" id="screen-results">
    <div id="resultsCapture">
+    <div id="reportCard"></div>
     <div class="resheader">
       <h2>Typing Analysis</h2>
       <div class="l1" id="resName">Name: Student</div>
@@ -1358,6 +1407,7 @@ let timerInt = null;
 let backspaceCount = 0;
 let wpmSamples = [];
 let lastResult = null;
+let markWords = 0;
 
 /* Tamil compose state (main test) */
 let mainComposer = {raw:'', outLen:0};
@@ -1467,6 +1517,9 @@ function readConfig(){
     layout: $('selLayout').value,
     passageIdx: parseInt($('selPassage').value || '0', 10),
     speedType: $('selSpeedType').value,
+    category: $('selCategory').value,
+    totalMarks: $('selCategory').value==='typing' ? 100 : 50,
+    level: (tl && parseInt(tl.value,10)===600 && ($('selSpeedType').value==='junior'||$('selSpeedType').value==='senior')) ? $('selSpeedType').value : 'full',
     time: tl ? parseInt(tl.value,10) : 300,
     prevWord: $('optPrevWord').checked,
     highlight: $('optHighlight').checked,
@@ -1508,11 +1561,13 @@ function startTest(m){
   readConfig();
   mode = m;
   timeLimitSecs = CFG.time;
-  passageText = getPassageText(CFG.lang, CFG.passageIdx);
+  const LV = getLevelText(CFG.lang, CFG.passageIdx, CFG.level==='full' ? 'full' : CFG.level);
+  passageText = LV.text;
+  markWords = (CFG.level==='full' ? LV.junior : LV.text).split(/\s+/).filter(Boolean).length;
 
   started = false; submitted = false;
   startTs = null; secsElapsed = 0;
-  backspaceCount = 0;
+  backspaceCount = 0; if($('liveBack')) $('liveBack').textContent = '0';
   wpmSamples = [{t:0, wpm:0}];
   lastLiveCalcAt = -1;
   mainComposer.raw = ''; mainComposer.outLen = 0;
@@ -1600,7 +1655,7 @@ function renderPassage(typed){
 
   origWords.forEach(tok=>{
     if(tok.trim() === ''){
-      html += tok.replace(/\n/g,'<br>');
+      html += tok.replace(/\n/g, mode==='line' ? ' ' : '<br>');
       return;
     }
     const thisWordIdx = wIdx;
@@ -1732,7 +1787,7 @@ function updateLiveStats(force){
   const tNow = secsElapsed;
   if(force || lastLiveCalcAt < 0 || tNow - lastLiveCalcAt >= 1){
     lastLiveCalcAt = tNow;
-    const r = calcResults(typed, passageText, Math.max(secsElapsed, 0.001), true);
+    const r = calcResults(typed, passageText, Math.max(secsElapsed, 0.001), true, true);
     $('liveWpm').textContent = r.netWpm;
 
     const lastSample = wpmSamples[wpmSamples.length-1];
@@ -1980,6 +2035,10 @@ TA.addEventListener('keydown', e=>{
   if(submitted){ e.preventDefault(); return; }
   if(e.ctrlKey || e.metaKey || e.altKey) return; // let browser shortcuts through
   if(e.key === 'Delete' || e.key === 'Tab'){ e.preventDefault(); return; }
+  // Backspace at the very start deletes nothing (no input event fires) but is still a key press.
+  if(e.key === 'Backspace' && TA.selectionStart===0 && TA.selectionEnd===0){
+    backspaceCount++; if($('liveBack')) $('liveBack').textContent = backspaceCount;
+  }
 });
 
 TA.addEventListener('input', e=>{
@@ -2033,7 +2092,6 @@ TA.addEventListener('input', e=>{
 
   const doDelete = (n)=>{
     for(let i=0;i<n;i++){
-      backspaceCount++;
       if(CFG.lockBackspace) continue;
       if(CFG.lang === 'ta') tamilBackspace(TA, mainComposer, CFG.layout);
       else {
@@ -2056,6 +2114,13 @@ TA.addEventListener('input', e=>{
     // replaying it — needed for deletions/replacements that aren't at the
     // very end of the text (e.g. caret moved back on-screen, then edited).
     TA.setSelectionRange(oldEnd, oldEnd);
+    // One Backspace key press = one count (a single press can remove several Tamil code points).
+    const it = e.inputType || '';
+    if(removedLen > 0 && (it==='deleteContentBackward' || it==='deleteWordBackward' || it==='deleteSoftLineBackward' ||
+       (!/^(insertText|insertFromPaste|insertLineBreak|deleteByCut|deleteContentForward)/.test(it) && insertedStr.length < removedLen))){
+      backspaceCount++;
+      if($('liveBack')) $('liveBack').textContent = backspaceCount;
+    }
     doDelete(removedLen);
     doInsert(insertedStr);
     onTypingChanged();
@@ -2103,298 +2168,218 @@ function alignWords(origWords, typedWords){
 }
 
 /* =====================================================================
-   CALCULATE RESULTS — matches the institute's official "Mistakes
-   Breakdown" marks engine:
-
-   • WORD ERRORS   — every original word not reproduced verbatim, whether
-                      mis-typed (substitution) or never typed at all
-                      (omitted) — EACH counts as ONE mistake.
-   • MISSING SPACES — two originally-separate words typed run together;
-                      every 5 such events = 1 mistake.
-   • EXTRA CHARACTERS — text typed that has no corresponding original word;
-                      counted directly, 1 mistake each.
-   • OMISSIONS     — characters missing from a partially-typed *final*
-                      word (e.g. time ran out mid-word); every 5 missing
-                      characters = 1 mistake. This is char-level and does
-                      NOT overlap with the whole-word OMISSIONS above.
-   totalMistakes = wordErrors + missingSpaceMistakes + extraCharMistakes + omissionMistakes
-   marks         = 50 − (totalMistakes × 1.8)                      [10-min test only]
-   Gross WPM     = (all typed chars ÷ 5) ÷ minutes                 — raw speed
-   Net WPM       = (correct chars ÷ 5) ÷ minutes                   — effective speed
-   Accuracy      = correctChars ÷ totalTypedChars × 100  (≡ NetWPM ÷ GrossWPM × 100)
+   LEVEL SPLITTER — stroke limits from the institute's stroke audit.
+   Stroke = 1 key press: letter 1, space 1, Enter 1 (a blank line between
+   paragraphs = 2), punctuation 1. Every level lands in  limit-5 ... limit:
+     ENGLISH  Junior 1500, Senior 2264        TAMIL  Junior 1610, Senior 2272
+   Junior has 2 paragraphs, Senior 3 (Senior contains the whole Junior text).
+   Unlimited / short tests get the whole text (chosen passage + the next one).
 ===================================================================== */
-function calcResults(typed, orig, elapsedSec, onlyEvaluateTyped){
-  const origWords = orig.split(/\s+/).filter(Boolean);
-  const typedWordsFull = typed.trim()==='' ? [] : typed.trim().split(/\s+/).filter(Boolean);
-  const completed = typedWordsFull.length >= Math.ceil(origWords.length*0.92);
-
-  // Was the very last keystroke mid-word (no trailing space/newline)? If so the
-  // final typed token may be a genuine in-progress partial word, not a full
-  // word the student chose to skip — handled specially below as a char-level
-  // OMISSION rather than a whole-word error.
-  const endedMidWord = typed.length>0 && !/\s$/.test(typed) && typedWordsFull.length>0;
-
-  const buffer = Math.min(15, Math.ceil(origWords.length*0.1) || 5);
-  const typedSlice = typedWordsFull.slice(0, origWords.length + buffer);
-  const ops = alignWords(origWords, typedSlice);
-
-  // trim trailing inserts past the last matched/deleted original word (overtyped buffer noise)
-  let lastOrigOpIdx=-1;
-  ops.forEach((op,k)=>{ if(op.type==='match'||op.type==='del') lastOrigOpIdx=k; });
-  let trimmedOps = ops.filter((op,k)=> !(op.type==='ins' && k>lastOrigOpIdx));
-
-  // Re-interleave each run of consecutive ins/del ops (everything between two
-  // 'match' ops, or at either end). The LCS backtrack above has no anchoring
-  // match to guide it through such a run, so its tie-breaking rule tends to
-  // emit ALL the inserts first and THEN all the deletes for that run (rather
-  // than the natural ins,del,del,ins,del,... order a human transcript has).
-  // That ordering defeats every pass below, which all look for an insert
-  // physically NEXT TO the delete(s) it corresponds to — e.g. missing-space
-  // detection (Pass 1) requires an insert to be immediately followed by the
-  // consecutive original words it merged. Left unfixed, a realistic mistake
-  // like running two or three words together mid-passage gets misread as a
-  // pile of unrelated word substitutions/omissions instead of the (lenient)
-  // missing-space penalty it actually is. Rebuild each run by walking the
-  // ordered list of typed chunks against the ordered list of original words
-  // it replaced, greedily re-pairing each insert with whichever consecutive
-  // original words its text matches (a join), or with the next unclaimed
-  // original word (a plain substitution) — this restores the natural
-  // interleaving while preserving every op and both internal orderings.
-  trimmedOps = (function interleaveBlocks(opsIn){
-    const out = [];
-    let i = 0;
-    while(i < opsIn.length){
-      if(opsIn[i].type === 'match'){ out.push(opsIn[i]); i++; continue; }
-      let j = i;
-      const insList=[], delList=[];
-      while(j < opsIn.length && opsIn[j].type !== 'match'){
-        (opsIn[j].type==='ins' ? insList : delList).push(opsIn[j]);
-        j++;
-      }
-      let dp = 0;
-      for(const insOp of insList){
-        let concat='', consumedCount=0, p=dp;
-        while(p < delList.length){
-          concat += delList[p].orig; consumedCount++;
-          if(concat === insOp.typed || concat.length >= insOp.typed.length) break;
-          p++;
-        }
-        if(concat === insOp.typed && consumedCount >= 1){
-          out.push(insOp);
-          for(let q=dp; q<dp+consumedCount; q++) out.push(delList[q]);
-          dp += consumedCount;
-        } else if(dp < delList.length){
-          out.push(insOp); out.push(delList[dp]); dp += 1;
-        } else {
-          out.push(insOp);
-        }
-      }
-      for(; dp < delList.length; dp++) out.push(delList[dp]);
-      i = j;
+const LEVEL_STROKES = { en:{junior:1500, senior:2264}, ta:{junior:1610, senior:2272} };
+const _levelCache = {};
+function countStrokes(t){ return t.length; }   // space = 1, each Enter = 1, every character = 1
+function buildLevels(lang, paras){
+  const lim = LEVEL_STROKES[lang==='ta'?'ta':'en'];
+  const words = paras.join(' ').split(/\s+/).filter(Boolean);
+  const isSent = w => /[.!?]$/.test(w);
+  const layout = brk => {                       // cumulative strokes after each word
+    const pos=[]; let c=0;
+    words.forEach((w,k)=>{ if(k>0) c += brk.has(k-1) ? 2 : 1; c += w.length; pos.push(c); });
+    return pos;
+  };
+  const join = (brk, upto, lastWord)=>{
+    let o='';
+    for(let k=0;k<=upto;k++){ if(k>0) o += brk.has(k-1) ? '\n\n' : ' '; o += (k===upto && lastWord!=null) ? lastWord : words[k]; }
+    return o;
+  };
+  // Best ending within limit-5 ... limit. The last word may drop its comma or take a full stop to reach the window;
+  // natural endings are preferred. If no ending lands in the window, a few invisible trailing spaces close the gap.
+  const pickEnd = (limit, brk)=>{
+    const pos=layout(brk); let best=null, bk=null;
+    for(let k=0;k<words.length;k++){
+      const base = k===0 ? 0 : pos[k-1] + (brk.has(k-1)?2:1);
+      if(base > limit) break;
+      const w=words[k], core=w.replace(/[,;:.!?]+$/,'');
+      const vars=[[w,0]]; if(core!==w) vars.push([core,1]); vars.push([core+'.',2]);
+      vars.forEach(([v,vi])=>{
+        const st=base+v.length; if(st>limit) return;
+        const per = vi===2?1:0, sent = (vi!==2&&isSent(w))?0:1;
+        const key = st>=limit-5 ? [0, per, sent, -st] : [1, -st, per, sent];
+        let less = !bk; if(bk){ for(let i=0;i<key.length;i++){ if(key[i]!==bk[i]){ less = key[i]<bk[i]; break; } } }
+        if(less){ best={k,v,st}; bk=key; }
+      });
     }
-    return out;
-  })(trimmedOps);
-
-  // Compute the last real match position, and — if the student's very last
-  // keystroke left them mid-word — identify the tail delete that's actually
-  // their in-progress partial word, UP FRONT and BEFORE Pass 0 runs. This
-  // must happen first: Pass 0 greedily claims any insert immediately
-  // followed by a delete as a full-word "substitution", and a partial word
-  // typed at the very end (e.g. "extraor" for "extraordinary") produces
-  // exactly that ins+del shape. Left in its original order-of-execution,
-  // Pass 0 would claim it before this partial-word check ever ran, so a
-  // student whose test simply timed out mid-word — which is how most timed
-  // tests end — would be wrongly charged a full word-substitution mistake
-  // instead of the lenient char-level omission this really is.
-  let lastMatchIdx=-1;
-  trimmedOps.forEach((op,k)=>{ if(op.type==='match') lastMatchIdx=k; });
-
-  const skipSet = new Set();
-  const realWordErrors = [];   // {orig, typed, kind:'sub'|'omit-mid'|'omit-tail'}
-  let extraCharMistakes = 0;
-
-  let omitCharMistakes = 0;
-  let omitCharsExact = 0;
-  let partialTailIdx = -1;
-  if(endedMidWord){
-    const lastTyped = typedWordsFull[typedWordsFull.length-1];
-    for(let k=lastMatchIdx+1;k<trimmedOps.length;k++){
-      if(trimmedOps[k].type!=='del') continue;
-      const w = trimmedOps[k].orig;
-      if(w.toLowerCase().startsWith(lastTyped.toLowerCase()) && lastTyped.length>=1){
-        omitCharsExact = w.length - lastTyped.length;
-        omitCharMistakes = Math.floor(omitCharsExact/5);
-        partialTailIdx = k;
-        skipSet.add(k);
-        // The insert immediately before it (if any) is the student's own
-        // partial keystrokes for this same word — already credited above
-        // via omitCharMistakes, so it must not ALSO be scored separately
-        // as unmatched "extra characters" by Pass 1 below.
-        if(k>0 && trimmedOps[k-1].type==='ins') skipSet.add(k-1);
-      }
-      break; // only the very first tail word can be the in-progress partial
-    }
+    if(best.st < limit-5) best={...best, v:best.v+' '.repeat(limit-5-best.st), st:limit-5};
+    return best;
+  };
+  const sentEndAtOrAfter = (brk, minStroke, minIdx)=>{
+    const pos=layout(brk);
+    for(let k=minIdx;k<words.length;k++) if(isSent(words[k]) && pos[k]>=minStroke) return k;
+    return -1;
+  };
+  // Junior: break A near the middle, then cut at the stroke limit
+  const a = sentEndAtOrAfter(new Set(), Math.floor(lim.junior/2), 0);
+  let brkJ = new Set(a>=0?[a]:[]);
+  let J = pickEnd(lim.junior, brkJ);
+  if(a>=J.k){ brkJ=new Set(); J=pickEnd(lim.junior, brkJ); }
+  // Senior: break B at the sentence end (Tamil: sentence or 10-word line end) nearest the middle of the extra part
+  const S0 = pickEnd(lim.senior, brkJ);
+  const mid = Math.floor((J.st + lim.senior)/2), posJ = layout(brkJ);
+  let b=-1, bd=Infinity;
+  for(let k=J.k+1;k<S0.k;k++){
+    const d=Math.abs(posJ[k]-mid);
+    // prefer real sentence ends, then Tamil 10-word lines, then any word boundary
+    const pen = isSent(words[k]) ? 0 : ((lang==='ta' && (k-J.k)%10===0) ? 150 : 400);
+    if(d+pen<bd){ bd=d+pen; b=k; }
   }
-
-  // Pass 0: adjacent ins+del / del+ins = a genuine word substitution
-  for(let k=0;k<trimmedOps.length-1;k++){
-    if(skipSet.has(k)||skipSet.has(k+1)) continue;
-    if(trimmedOps[k].type==='ins' && trimmedOps[k+1].type==='del'){
-      const nextIsAlsoDel = trimmedOps[k+2] && trimmedOps[k+2].type==='del';
-      const concatTwo = trimmedOps[k+1].orig + (nextIsAlsoDel ? trimmedOps[k+2].orig : '');
-      if(!nextIsAlsoDel || concatTwo!==trimmedOps[k].typed){
-        realWordErrors.push({orig:trimmedOps[k+1].orig, typed:trimmedOps[k].typed, kind:'sub'});
-        skipSet.add(k); skipSet.add(k+1);
-      }
-    } else if(trimmedOps[k].type==='del' && trimmedOps[k+1].type==='ins'){
-      const nextIsAlsoDel = trimmedOps[k+2] && trimmedOps[k+2].type==='del';
-      if(!nextIsAlsoDel){
-        realWordErrors.push({orig:trimmedOps[k].orig, typed:trimmedOps[k+1].typed, kind:'sub'});
-        skipSet.add(k); skipSet.add(k+1);
-      }
-    }
+  const brkS = new Set(brkJ); if(b>=0) brkS.add(b);
+  let S2 = pickEnd(lim.senior, brkS);
+  if(b>=S2.k){ brkS.delete(b); S2 = pickEnd(lim.senior, brkS); }
+  // Unlimited: continue with a paragraph about every 1000 strokes
+  const brkF = new Set(brkS); let since=0;
+  for(let k=S2.k+1;k<words.length;k++){ since += words[k].length+1; if(isSent(words[k]) && since>=1000){ brkF.add(k); since=0; } }
+  return { junior: join(brkJ, J.k, J.v), senior: join(brkS, S2.k, S2.v), full: join(brkF, words.length-1, null) };
+}
+function getLevelText(lang, idx, level){
+  const key = lang+'|'+idx;
+  if(!_levelCache[key]){
+    const list = PASSAGES[lang] || PASSAGES.en;
+    const i = list[idx] ? idx : 0;
+    _levelCache[key] = buildLevels(lang, [list[i].text + ' ' + list[(i+1)%list.length].text]);
   }
-
-  // Pass 1: an insert whose text equals concatenated following deletes = ONE missing-space event.
-  // A left-over insert that matches nothing = EXTRA CHARACTERS.
-  let missingSpaceEvents = 0;
-  for(let k=0;k<trimmedOps.length;k++){
-    if(skipSet.has(k)) continue;
-    const op = trimmedOps[k];
-    if(op.type==='ins'){
-      let concat='', j=k+1, consumed=[];
-      while(j<trimmedOps.length && trimmedOps[j].type==='del' && !skipSet.has(j)){
-        concat+=trimmedOps[j].orig; consumed.push(j);
-        if(concat===op.typed || concat.length>=op.typed.length) break;
-        j++;
-      }
-      if(concat===op.typed && consumed.length>=1){
-        missingSpaceEvents++;
-        skipSet.add(k);
-        consumed.forEach(idx=>skipSet.add(idx));
-      } else if(!skipSet.has(k)){
-        extraCharMistakes++;
-        skipSet.add(k);
-      }
-    }
-  }
-
-  // correctChars: sum of matched-word lengths, PLUS one character for every
-  // correctly-typed space between two consecutively matched words. Without
-  // the space credit, a perfectly-typed passage (zero mistakes) would still
-  // show well under 100% accuracy and a Net WPM noticeably below Gross WPM —
-  // both should be equal/100% when nothing was mistyped — because roughly
-  // one out of every six typed characters (the space bar presses) would be
-  // silently excluded from "correct" even though the student typed them
-  // right. Only match-match pairs are credited (the space is unambiguously
-  // correct there); spaces adjacent to a substitution/omission/extra aren't
-  // independently verifiable from the word-level diff, so they're left
-  // uncredited rather than guessed at.
-  let correctChars=0;
-  trimmedOps.forEach((op,k)=>{
-    if(skipSet.has(k)) return;
-    if(op.type==='match'){
-      correctChars += op.orig.length;
-      if(k>0 && trimmedOps[k-1].type==='match' && !skipSet.has(k-1)) correctChars += 1;
-    }
-  });
-
-  // Pass 2: leftover deletes before the last match = mid-passage word skip;
-  // deletes at/after the last match = the *unreached tail* of the passage.
-  // (lastMatchIdx and the partial-tail char-omission were already computed
-  // above, before Pass 0, so Pass 0 couldn't wrongly claim the in-progress
-  // final word as a full-word substitution.)
-
-  // These institute passages are intentionally oversized (400+ words) so no
-  // typist ever runs out of material — nobody is expected to finish within
-  // the time limit. So the untyped TAIL (whatever comes after wherever the
-  // student stopped when time ran out) is NEVER counted as mistakes, same
-  // as Net/Gross WPM and Accuracy already only evaluate the typed portion.
-  // A word skipped mid-passage (student kept going past it) is still a
-  // real mistake and stays penalized below.
-  const tailIncluded = false;
-  trimmedOps.forEach((op,k)=>{
-    if(skipSet.has(k) || k===partialTailIdx) return;
-    if(op.type==='del'){
-      if(k<lastMatchIdx){
-        realWordErrors.push({orig:op.orig, typed:'', kind:'omit-mid'});
-      } else if(tailIncluded){
-        realWordErrors.push({orig:op.orig, typed:'', kind:'omit-tail'});
-      }
-    }
-  });
-
-  const missingSpaceMistakes = Math.floor(missingSpaceEvents/5);
-  // "Mistakes" should only reflect content the student actually typed wrong —
-  // substitutions, missing-space joins, and stray extra characters. Skipped
-  // mid-passage words ('omit-mid') and the trailing partial word they were
-  // still typing when time ran out (omitCharMistakes) were never actually
-  // finished/typed, so — same as the untyped tail — they're tracked and
-  // still shown in the breakdown for reference, but are NOT counted toward
-  // the Mistakes total or the marks deduction.
-  const subMistakes = realWordErrors.filter(e=>e.kind==='sub').length;
-  const totalMistakes = subMistakes + missingSpaceMistakes + extraCharMistakes;
-  // Marks are only calculated for the 10‑minute test
-  const marks = (CFG.time === 600) ? Math.max(0, +(50 - (totalMistakes*1.8)).toFixed(1)) : null;
-
-  const strokesWithSpace = typed.length;
-  const strokesWithoutSpace = typed.replace(/\s/g,'').length;
-  const minutes = Math.max(elapsedSec, 1) / 60;
-
-  // Gross WPM: raw typing speed from every character typed (before errors)
-  const grossWpm = Math.max(0, Math.round((strokesWithSpace/5)/minutes));
-  // Net WPM: effective speed from only the CORRECTLY typed characters
-  const netWpm = Math.max(0, Math.round((correctChars/5)/minutes));
-  // Accuracy is mathematically the same ratio as Net÷Gross, expressed as %
-  const accuracy = strokesWithSpace>0 ? Math.max(0, Math.min(100, Math.round((correctChars/strokesWithSpace)*100))) : 0;
-
-  const compare = buildCompareRender(trimmedOps, lastMatchIdx, skipSet, tailIncluded, partialTailIdx);
-  const weakestKeys = buildWeakestKeys(realWordErrors, CFG.lang);
-
-  return {grossWpm, netWpm, marks, accuracy, errors: totalMistakes, ops, trimmedOps,
-           strokesWithSpace, strokesWithoutSpace, completed, correctChars,
-           wordErrors: realWordErrors, omitCharMistakes, omitCharsExact, missingSpaceEvents, missingSpaceMistakes,
-           extraCharMistakes, compare, weakestKeys};
+  const L = _levelCache[key];
+  return { text: L[level] || L.full, junior: L.junior, senior: L.senior };
 }
 
 /* =====================================================================
-   COMPARISON RENDER — builds the two parallel token streams used by the
-   "Comparison" card: the ORIGINAL passage (with substitutions squiggled,
-   mid-passage skips struck through, and the unreached tail in italics)
-   and the RESPONSE (only what the student actually typed).
+   ALIGNMENT — word-level edit distance (match 0, substitute/insert/delete 1).
+   A typed word can no longer jump to an identical word far ahead and mark
+   everything in between as skipped: that would cost one deletion per skipped
+   word, while a plain substitution costs 1. Untyped tail and typed text past
+   the end of the passage are free.
 ===================================================================== */
-function buildCompareRender(trimmedOps, lastMatchIdx, mistakeSkipSet, tailIncluded, partialTailIdx){
-  const origRender=[], typedRender=[];
-  const visited = new Set();
-  for(let k=0;k<trimmedOps.length;k++){
-    if(visited.has(k)) continue;
-    const op = trimmedOps[k];
-    if(op.type==='match'){
-      origRender.push({text:op.orig, cls:'ok'});
-      typedRender.push({text:op.typed, cls:'ok'});
-    } else if(op.type==='ins' && trimmedOps[k+1] && trimmedOps[k+1].type==='del'){
-      origRender.push({text:trimmedOps[k+1].orig, cls:'sub'});
-      typedRender.push({text:op.typed, cls:'sub'});
-      visited.add(k+1);
-    } else if(op.type==='del' && trimmedOps[k+1] && trimmedOps[k+1].type==='ins'){
-      origRender.push({text:op.orig, cls:'sub'});
-      typedRender.push({text:trimmedOps[k+1].typed, cls:'sub'});
-      visited.add(k+1);
-    } else if(op.type==='del'){
-      if(k===partialTailIdx){
-        origRender.push({text:op.orig, cls:'partial'});
-      } else if(k<lastMatchIdx){
-        origRender.push({text:op.orig, cls:'omit'});
-      } else if(tailIncluded){
-        origRender.push({text:op.orig, cls:'tail'});
-      } else {
-        origRender.push({text:op.orig, cls:'tail-ignored'});
-      }
-    } else if(op.type==='ins'){
-      typedRender.push({text:op.typed, cls:'extra'});
+function alignEdit(O, T){
+  const n=O.length, m=T.length, W=m+1;
+  const dp=new Uint16Array((n+1)*W);
+  for(let j=0;j<=m;j++) dp[j]=j;
+  for(let i=1;i<=n;i++){
+    dp[i*W]=i;
+    for(let j=1;j<=m;j++){
+      const d=dp[(i-1)*W+j-1] + (O[i-1]===T[j-1]?0:1);
+      const u=dp[(i-1)*W+j]+1, l=dp[i*W+j-1]+1;
+      dp[i*W+j]= d<u ? (d<l?d:l) : (u<l?u:l);
     }
   }
-  return {origRender, typedRender};
+  // free endings: untyped tail (i<n, j=m) or typed words past the passage (i=n, j<m)
+  let bi=0,bj=m,bc=dp[m]; // (0,m)
+  for(let i=0;i<=n;i++){ const c=dp[i*W+m]; if(c<bc || (c===bc && i+m>=bi+bj)){bc=c;bi=i;bj=m;} }
+  for(let j=0;j<=m;j++){ const c=dp[n*W+j]; if(c<bc || (c===bc && n+j>=bi+bj)){bc=c;bi=n;bj=j;} }
+  const ops=[]; let i=bi,j=bj;
+  while(i>0||j>0){
+    const cur=dp[i*W+j];
+    if(i>0&&j>0 && cur===dp[(i-1)*W+j-1]+(O[i-1]===T[j-1]?0:1)){
+      ops.push(O[i-1]===T[j-1] ? {type:'match',orig:O[i-1],typed:T[j-1]} : {type:'sub',orig:O[i-1],typed:T[j-1]}); i--;j--;
+    } else if(i>0 && cur===dp[(i-1)*W+j]+1){ ops.push({type:'del',orig:O[i-1]}); i--; }
+    else { ops.push({type:'ins',typed:T[j-1]}); j--; }
+  }
+  ops.reverse();
+  return {ops, endI:bi};
+}
+
+function calcResults(typed, orig, elapsedSec, onlyEvaluateTyped, live){
+  const O = orig.split(/\s+/).filter(Boolean);
+  const Tfull = typed.split(/\s+/).filter(Boolean);
+  const T = Tfull.slice(0, O.length+30);
+  const endedMidWord = typed.length>0 && !/\s$/.test(typed) && Tfull.length>0;
+  const {ops, endI} = alignEdit(O, T);
+
+  // correct characters (a correctly typed word + the space joining two correct words)
+  let correctChars=0, prev=false;
+  ops.forEach(op=>{ if(op.type==='match'){ if(prev) correctChars++; correctChars+=op.orig.length; prev=true; } else prev=false; });
+  const mins = elapsedSec>0 ? elapsedSec/60 : 1/600;
+  const typedLen = typed.trim().length;
+  const netWpm = Math.max(0, Math.round((correctChars/5)/mins));
+  if(live) return {netWpm, correctChars};
+  const grossWpm = Math.max(0, Math.round((typedLen/5)/mins));
+  const accuracy = typedLen>0 ? Math.max(0, Math.min(100, Math.round((correctChars/typedLen)*100))) : 0;
+
+  // classify edit blocks
+  const items=[];
+  for(let a=0;a<ops.length;){
+    const op=ops[a];
+    if(op.type==='match'){ items.push({k:'ok',o:[op.orig],t:[op.typed]}); a++; continue; }
+    if(op.type==='ins'){
+      // extra space inside a word: typed pieces followed by one typed word that together equal the original
+      let b=a, c=''; const ts=[];
+      while(b<ops.length && ops[b].type==='ins'){ c+=ops[b].typed; ts.push(ops[b].typed); b++; }
+      const nx=ops[b];
+      if(nx && nx.type==='sub' && (c+nx.typed)===nx.orig){ items.push({k:'split',o:[nx.orig],t:ts.concat([nx.typed])}); a=b+1; continue; }
+    }
+    if(op.type==='sub'||op.type==='ins'){
+      let cat=op.type==='sub'?op.orig:'', b=a+1;
+      while(b<ops.length && ops[b].type==='del' && cat.length<op.typed.length){ cat+=ops[b].orig; b++; }
+      if(cat===op.typed && b-a>=2){ items.push({k:'merge',o:ops.slice(a,b).map(x=>x.orig),t:[op.typed]}); a=b; continue; }
+      if(op.type==='sub'){
+        let c=op.typed, b2=a+1;
+        while(b2<ops.length && ops[b2].type==='ins' && c.length<op.orig.length){ c+=ops[b2].typed; b2++; }
+        if(c===op.orig && b2-a>=2){ items.push({k:'split',o:[op.orig],t:ops.slice(a,b2).map(x=>x.typed)}); a=b2; continue; }
+        items.push({k:'sub',o:[op.orig],t:[op.typed]});
+      } else items.push({k:'extra',o:[],t:[op.typed]});
+      a++; continue;
+    }
+    // run of deletions: a missing space can also appear as dels followed by one typed word
+    let b=a; const ds=[]; while(b<ops.length && ops[b].type==='del'){ ds.push(ops[b].orig); b++; }
+    const nx=ops[b];
+    if(nx && (nx.type==='sub'||nx.type==='ins') && (ds.join('')+(nx.type==='sub'?nx.orig:''))===nx.typed){
+      items.push({k:'merge',o:ds.concat(nx.type==='sub'?[nx.orig]:[]),t:[nx.typed]}); a=b+1; continue;
+    }
+    ds.forEach(w=>items.push({k:'omit',o:[w],t:[]})); a=b;
+  }
+  // a half-typed last word (time ran out mid-word) is not a mistake
+  let tailStart = endI;
+  const last = items[items.length-1];
+  if(endedMidWord && last){
+    if(last.k==='sub' && last.o[0].startsWith(last.t[0]) && last.t[0].length<last.o[0].length) last.k='partial';
+    else if(last.k==='extra' && tailStart<O.length && O[tailStart].startsWith(last.t[0])){ last.k='partial'; last.o=[O[tailStart]]; tailStart++; }
+  }
+
+  const wordErrors=[]; let merges=0, extras=0, omitChars=0;
+  items.forEach(it=>{
+    if(it.k==='sub'||it.k==='split') wordErrors.push({orig:it.o[0],typed:it.t.join(' '),kind:'sub'});
+    else if(it.k==='extra'){ extras++; wordErrors.push({orig:'',typed:it.t[0],kind:'extra'}); }
+    else if(it.k==='merge') merges++;
+    else if(it.k==='omit'){ omitChars+=it.o[0].length+1; wordErrors.push({orig:it.o[0],typed:'',kind:'omit-mid'}); }
+  });
+  const subCount = wordErrors.filter(e=>e.kind==='sub').length;
+  const omitMistakes = Math.round(omitChars/5);
+  const totalMistakes = subCount + extras + merges + omitMistakes;
+
+  // MARKS — institute formula: total - (mistakes x 1.8), capped by how much of the passage was typed
+  const total = (typeof CFG!=='undefined' && CFG.totalMarks) || 50;
+  const need = Math.max(1, markWords || O.length);
+  // Typing exam: Senior 100 - mistakes x 1.25, Junior 100 - mistakes x 1.8. COA (Junior & Senior): 50 - mistakes x 1.8.
+  const factor = (CFG.category==='typing' && CFG.level==='senior') ? 1.25 : 1.8;
+  const raw = Math.max(0, total - totalMistakes*factor);
+  const cap = total * Math.min(1, Tfull.length/need);
+  const marks = Math.max(0, +Math.min(raw, cap).toFixed(1));
+  const completed = Tfull.length >= Math.ceil(need*0.92);
+
+  // comparison render
+  const origRender=[], typedRender=[];
+  const clsOf={ok:'ok',sub:'sub',split:'sub',merge:'sub',omit:'omit',partial:'partial'};
+  items.forEach(it=>{
+    if(it.k==='extra'){ typedRender.push({text:it.t[0],cls:'extra'}); return; }
+    it.o.forEach(w=>origRender.push({text:w,cls:clsOf[it.k]}));
+    it.t.forEach(w=>typedRender.push({text:w,cls:it.k==='ok'?'ok':(it.k==='partial'?'partial':'sub')}));
+  });
+  O.slice(tailStart).forEach(w=>origRender.push({text:w,cls:'tail-ignored'}));
+
+  return {grossWpm, netWpm, marks, total, passMarks:+(total*0.6).toFixed(1), factor, accuracy, errors: totalMistakes, ops,
+          strokesWithSpace: typed.length, strokesWithoutSpace: typed.replace(/\s/g,'').length, completed, correctChars,
+          wordErrors, omitCharMistakes: omitMistakes, omitCharsExact: omitChars,
+          missingSpaceEvents: merges, missingSpaceMistakes: merges, extraCharMistakes: extras,
+          compare:{origRender, typedRender},
+          weakestKeys: buildWeakestKeys(wordErrors, CFG.lang)};
 }
 
 /* =====================================================================
@@ -2428,16 +2413,12 @@ function submitTest(auto){
   }
   updateLiveStats(true);
 
-  const r = calcResults(TA.value, passageText, secsElapsed, CFG.time !== 600);
+  const r = calcResults(TA.value, passageText, secsElapsed, false);
   lastResult = r;
-  // Pass/Fail: Net WPM vs the selected Speed Type's target (Junior 30 / Senior 45).
-  // Only the full 10-minute test is long enough to fairly judge against a
-  // sustained-speed target — same reasoning as why Marks are 10-min-only.
-  // 30s / 1m / 5m tests are always treated as Unlimited (no target, always pass),
-  // regardless of which Speed Type is selected in the setup screen.
-  const target = (CFG.time === 600) ? (CFG.speedType === 'senior' ? 45 : (CFG.speedType === 'junior' ? 30 : 0)) : 0;
-  r.target = target;
-  r.passed = target === 0 ? true : (r.netWpm >= target);
+  // Junior / Senior (10-min test): must type at least 92% of the portion AND score the pass marks (60% of total).
+  // Any other test is a practice run and always passes.
+  r.target = CFG.level==='senior' ? 45 : (CFG.level==='junior' ? 30 : 0);
+  r.passed = CFG.level==='full' ? true : (r.completed && r.marks >= r.passMarks);
 
   renderResults(r, TA.value);
   saveResult(r);
@@ -2447,6 +2428,72 @@ function submitTest(auto){
 /* =====================================================================
    RESULTS RENDERING
 ===================================================================== */
+
+function buildReportHTML(r){
+  const isTA = CFG.lang==='ta';
+  const mm = String(Math.floor(secsElapsed/60)).padStart(2,'0');
+  const ss = String(Math.floor(secsElapsed%60)).padStart(2,'0');
+  const now = new Date();
+  const timed = CFG.time===600;
+  const st = CFG.level==='full' ? 'unlimited' : CFG.level;
+  const stEN = st==='senior'?'SENIOR':(st==='junior'?'JUNIOR':'UNLIMITED');
+  const stTA = st==='senior'?'சீனியர்':(st==='junior'?'ஜூனியர்':'வரம்பற்றது');
+  const net = r.netWpm;
+  let cap = ['NEEDS PRACTICE','#c0151b'];
+  if(net>=45) cap=['EXCELLENT','#15803d']; else if(net>=30) cap=['GOOD','#2563eb']; else if(net>=20) cap=['AVERAGE','#b45309'];
+  const ok = r.passed;
+  const col = ok ? '#15803d' : '#c0151b';
+  let head, sub;
+  if(isTA){
+    head = (ok?'தகுதி பெற்றீர்கள்':'தகுதி பெறவில்லை')+' – '+stTA+' ('+(ok?'PASS':'FAIL')+')';
+    sub = !ok ? (r.completed ? `தேர்ச்சி மதிப்பெண் (${r.passMarks}/${r.total}) பெறவில்லை.` : 'முழு பகுதியும் தட்டச்சுச் செய்யப்படவில்லை.')
+              : (r.target ? 'இலக்கு வேகம் எட்டப்பட்டது.' : 'பயிற்சித் தேர்வு முடிந்தது.');
+  } else {
+    head = (ok?'QUALIFIED':'NOT QUALIFIED')+' – '+stEN+' ('+(ok?'PASS':'FAIL')+')';
+    sub = !ok ? (r.completed ? `Pass mark (${r.passMarks}/${r.total}) not reached.` : 'The full passage was not typed.')
+              : (r.target ? 'Target speed achieved.' : 'Practice test completed.');
+  }
+  const chips = [];
+  if(CFG.time===600) chips.push(['#7c3aed',`${r.marks}/${r.total}`,'Marks']);
+  chips.push(['#dc2626',r.errors,'Mistakes'],['#16a34a',r.correctChars,'Correct chars'],['#2563eb',r.netWpm,'Net WPM'],['#0891b2',r.grossWpm,'Gross WPM'],['#c026d3',r.accuracy+'%','Accuracy']);
+  const chipHTML = chips.map(c=>`<div class="rp-chip" style="background:${c[0]}"><b>${c[1]}</b><span>${c[2]}</span></div>`).join('')
+    + `<div class="rp-chip bs"><b>${backspaceCount}</b><span>⌫ Backspace used</span></div>`;
+  const circ = t => Array.from(t).map(c=>`<span class="rc">${esc(c)}</span>`).join('');
+  const orig = r.compare.origRender.map(t=>{
+    if(t.cls==='sub'||t.cls==='omit') return `<span class="rm">${esc(t.text)}</span>`;
+    if(t.cls==='tail-ignored'||t.cls==='tail') return `<span class="rt">${esc(t.text)}</span>`;
+    return esc(t.text);
+  }).join(' ');
+  const typed = r.compare.typedRender.map(t=> (t.cls==='sub'||t.cls==='extra') ? circ(t.text) : esc(t.text)).join(' ');
+  const weak = (r.weakestKeys||[]).slice(0,6);
+  const weakHTML = weak.length
+    ? `<table class="rp-weak">${weak.map(k=>`<tr><td>${esc(k.letter)}</td><td>${k.count}×</td></tr>`).join('')}</table>
+       <div class="rp-note">📌 Staff note: this student most frequently mistypes or omits "<b>${esc(weak[0].letter)}</b>". Targeted drills on this letter/key are recommended.</div>`
+    : `<div class="rp-note" style="background:#f0fdf4;border-color:#bbf7d0;color:#14532d">✓ No weak letters detected.</div>`;
+  const ptitle = (PASSAGES[CFG.lang]&&PASSAGES[CFG.lang][CFG.passageIdx])?PASSAGES[CFG.lang][CFG.passageIdx].title:'';
+  return `<div class="rp">
+    <div class="rp-head"><h2>Sri Kalaimagal Typewriting Institute — Typing Test Result</h2><div>Generated ${esc(now.toLocaleString('en-US'))}</div></div>
+    <table class="rp-tbl">
+      <tr><td>Student Name</td><td>${esc(CFG.name)}</td></tr>
+      <tr><td>Exam Category</td><td>${CFG.category==='typing'?'Typing (100 marks)':'COA (50 marks)'}</td></tr>
+      <tr><td>Language</td><td>${isTA?'Tamil':'English'}</td></tr>
+      <tr><td>Time Taken</td><td>${mm}:${ss}</td></tr>
+      <tr><td>Date</td><td>${esc(now.toLocaleDateString('en-US'))}</td></tr>
+      <tr><td>Overall Capacity</td><td><span class="rp-badge" style="color:${cap[1]};border-color:${cap[1]}">${cap[0]}</span></td></tr>
+    </table>
+    <div class="rp-chips">${chipHTML}</div>
+    <div class="rp-verdict" style="color:${col};border-color:${col}">${esc(head)}<br>${esc(sub)}</div>
+    <div class="rp-sec">Comparison — ${stEN} portion${timed?' (evaluated for marks)':''}</div>
+    <div class="rp-leg"><span class="rc"></span> Mistake (circled, in Your Response) &nbsp; <u>abc</u> Mistake word (red underline, in Original Passage) &nbsp; · ${esc(ptitle)}</div>
+    <div class="rp-cols">
+      <div class="rp-col"><div class="rp-lab">Original Passage</div><div class="rp-box${isTA?' ta':''}">${orig}</div></div>
+      <div class="rp-col"><div class="rp-lab">Your Response</div><div class="rp-box${isTA?' ta':''}">${typed||'&nbsp;'}</div></div>
+    </div>
+    <div class="rp-sec" style="margin-top:16px">Letter-mistake analysis — weakest letters</div>
+    ${weakHTML}
+  </div>`;
+}
+
 function renderResults(r, typed){
   const mm = String(Math.floor(secsElapsed/60)).padStart(2,'0');
   const ss = String(Math.floor(secsElapsed%60)).padStart(2,'0');
@@ -2482,6 +2529,7 @@ function renderResults(r, typed){
   }
 
   try{ drawChart(wpmSamples); }catch(e){ /* chart is a nice-to-have; never block the results screen */ }
+  try{ $("reportCard").innerHTML = buildReportHTML(r); }catch(e){ console.error("report failed",e); }
   renderMistakesBreakdown(r);
   renderComparisonV2(r);
 }
@@ -2554,7 +2602,7 @@ function renderMistakesBreakdown(r){
   $('mbSumTotal').textContent = r.errors;
 
   const minutes = Math.max(secsElapsed,1)/60;
-  const marksLine = r.marks!==null ? `Marks = 50 − (${r.errors} × 1.8) = ${r.marks}  |  ` : '';
+  const marksLine = r.marks!==null ? `Marks = ${r.total} − (${r.errors} × 1.8) = ${r.marks}  |  ` : '';
   $('mbFormulaLine').textContent =
     `${marksLine}Net WPM = (correct chars ÷ 5) ÷ minutes = ${r.netWpm} wpm  |  ` +
     `Gross WPM = (all typed chars ÷ 5) ÷ minutes = ${r.grossWpm} wpm  |  Accuracy: ${r.accuracy}%`;
@@ -2641,7 +2689,7 @@ async function saveResult(r){
     const passageTitle = (PASSAGES[CFG.lang] && PASSAGES[CFG.lang][CFG.passageIdx]) ? PASSAGES[CFG.lang][CFG.passageIdx].title : '';
     list.unshift({
       name: CFG.name, lang: CFG.lang, layout: CFG.layout, passage: passageTitle,
-      grossWpm: r.grossWpm, netWpm: r.netWpm, marks: r.marks, accuracy: r.accuracy, passed: r.passed,
+      grossWpm: r.grossWpm, netWpm: r.netWpm, marks: (CFG.time===600 ? r.marks : null), accuracy: r.accuracy, passed: r.passed,
       date: new Date().toLocaleDateString()
     });
     list = list.slice(0, 15);
@@ -2742,14 +2790,43 @@ function openSettings(){
 }
 function retrySame(){ startTest(mode); }
 
+
+/* FULL SCREEN — hides the browser address bar / tabs (not supported on iPhone Safari) */
+function toggleFullscreen(){
+  const d=document, el=d.documentElement;
+  const cur=d.fullscreenElement||d.webkitFullscreenElement;
+  try{
+    if(!cur){
+      const req=el.requestFullscreen||el.webkitRequestFullscreen;
+      if(!req){ toast('Full screen is not supported here. Use "Add to Home Screen" instead.'); return; }
+      const p=req.call(el); if(p&&p.catch) p.catch(()=>toast('⚠️ Could not enter full screen'));
+    } else {
+      (d.exitFullscreen||d.webkitExitFullscreen).call(d);
+    }
+  }catch(e){ toast('⚠️ Could not change full screen'); }
+}
+function syncFullscreenBtn(){
+  const b=$('btnFullscreen'); if(!b) return;
+  const on=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  b.textContent=on?'✕':'⛶'; b.title=on?'Exit full screen':'Full screen';
+}
+document.addEventListener('fullscreenchange',syncFullscreenBtn);
+document.addEventListener('webkitfullscreenchange',syncFullscreenBtn);
+
 /* =====================================================================
    RESULT DOWNLOAD (PDF) & SHARE (image) — mobile friendly, captures the
    results card as a canvas via html2canvas, then either turns it into a
    PDF (jsPDF) or shares it as an image using the native Web Share API.
 ===================================================================== */
 async function captureResultsCanvas(){
-  const node = $('resultsCapture');
-  return await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+  const rp = document.querySelector('#reportCard .rp');
+  const clone = rp.cloneNode(true);
+  clone.classList.add('pdfmode');
+  clone.style.cssText = 'position:absolute;left:-10000px;top:0;';
+  document.body.appendChild(clone);
+  try{
+    return await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+  } finally { clone.remove(); }
 }
 
 async function downloadResultPDF(){
@@ -2758,10 +2835,21 @@ async function downloadResultPDF(){
   try{
     if(btn){ btn.textContent = 'Preparing…'; btn.disabled = true; }
     const canvas = await captureResultsCanvas();
-    const imgData = canvas.toDataURL('image/png');
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'pt', [canvas.width, canvas.height]);
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    const pdf = new jsPDF('p', 'pt', 'a4');
+    const pw = pdf.internal.pageSize.getWidth(), ph = pdf.internal.pageSize.getHeight(), m = 20;
+    const k = (pw - 2*m) / canvas.width;
+    const sliceH = Math.floor((ph - 2*m) / k);
+    for(let y=0, p=0; y < canvas.height; y += sliceH, p++){
+      const h = Math.min(sliceH, canvas.height - y);
+      const part = document.createElement('canvas');
+      part.width = canvas.width; part.height = h;
+      const pc = part.getContext('2d');
+      pc.fillStyle = '#fff'; pc.fillRect(0,0,part.width,part.height);
+      pc.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+      if(p>0) pdf.addPage();
+      pdf.addImage(part.toDataURL('image/jpeg',0.95), 'JPEG', m, m, canvas.width*k, h*k);
+    }
     const fname = `${(CFG.name||'Student').replace(/\s+/g,'_')}_Typing_Result.pdf`;
     pdf.save(fname);
     toast('✅ PDF downloaded');

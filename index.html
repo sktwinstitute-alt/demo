@@ -54,6 +54,16 @@
 .rp.pdfmode .rp-box{max-height:none;overflow:visible;}
 @media (max-width:520px){.rp:not(.pdfmode) .rp-cols{flex-direction:column;}.rp:not(.pdfmode) .rp-col{width:100%;flex:none;}}
 #btnFullscreen::after{display:none;}
+
+/* readable word colours on the light themes (the default green/red were too pale on white) */
+body:not([data-theme="black"]) #passDisplay .w-ok{color:#047857;}
+body:not([data-theme="black"]) #passDisplay .w-bad{color:#b91c1c;}
+.rp-calc{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px;}
+.rp-calc td{border:1px solid #ddd;padding:6px 10px;}
+.rp-calc td:last-child{text-align:right;font-weight:700;width:70px;}
+.rp-calc tr.tot td{background:#f3f0ff;font-weight:800;}
+.rp-formula{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;font-family:'Courier New',monospace;font-size:12px;line-height:1.7;color:#1e293b;margin-bottom:8px;word-break:break-word;}
+.rp-formula b{color:#4c1d95;}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -293,7 +303,7 @@ body{
 .testpanels.mode-parallel #passDisplay{color:#e9e2d3;font-size:calc(var(--typesize) - 6px);line-height:1.75;padding:0 11px 12px;}
 .testpanels.mode-parallel #passDisplay .w-ok{color:#59d98e;}
 .testpanels.mode-parallel #passDisplay .w-bad{color:#ff8a80;}
-.testpanels.mode-parallel #passDisplay .w-cur.highlight{background:#4a3a17;border-radius:3px;}
+.testpanels.mode-parallel #passDisplay .w-cur.highlight{background:#6b5320;color:#fff4d6;border-radius:3px;}
 .testpanels.mode-parallel #passDisplay .w-prev{opacity:.45;}
 .testpanels.mode-parallel #typingArea{
   color:#f3efe4;background:transparent;font-size:calc(var(--typesize) - 6px);min-height:0;height:100%;padding:0 11px 12px;
@@ -646,7 +656,21 @@ body{
   <div style="color:#fff;font-family:'Poppins',sans-serif;font-weight:800;font-size:18px;margin-top:14px;letter-spacing:.3px;">Typing <span style="color:#fbbf24;">Thalaiva</span></div>
   <div style="color:rgba(255,255,255,.7);font-size:11.5px;margin-top:4px;">Sri Kalaimagal Typewriting Institute</div>
 </div>
-<style>@keyframes splashPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.08);opacity:.85;}}</style>
+<style>@keyframes splashPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.08);opacity:.85;}}
+/* ---- readable text on accent surfaces (buttons, timer card, chips, toast) in every theme ---- */
+body[data-theme="white"]{--act1:#c2410c;--act2:#9a3412;--acttxt:#ffffff;--toastbg:#1e293b;--toasttxt:#ffffff;}
+body[data-theme="golden"]{--act1:#8a6508;--act2:#6b4e06;--acttxt:#ffffff;--toastbg:#5c3f0a;--toasttxt:#ffffff;}
+body[data-theme="black"]{--act1:#ffcf40;--act2:#f5b301;--acttxt:#1a1200;--toastbg:#e6edf5;--toasttxt:#0a0f1c;}
+body[data-theme] .solidbtn{background:linear-gradient(135deg,var(--act1),var(--act2));color:var(--acttxt);}
+body[data-theme] .service-btn,body[data-theme] .testtop,body[data-theme] .prac-chip.on,body[data-theme] .continue-card-btn{background:var(--act1);color:var(--acttxt);}
+body[data-theme] .testtop .backbtn{color:var(--orange);}
+body[data-theme] #toast{background:var(--toastbg);color:var(--toasttxt);}
+body[data-theme] .prac-langtabs button.on{background:var(--act1);color:var(--acttxt);}
+body[data-theme="black"] .timerbox.warn{color:#7a3b00;}
+body[data-theme="black"] .timerbox.danger{color:#8a0f0f;}
+body[data-theme="black"] .kbbadge{background:rgba(0,0,0,.14);}
+body[data-theme] .backbtn{color:var(--act1);}
+</style>
 
 <div class="app" id="app">
 
@@ -1405,6 +1429,8 @@ let started = false, submitted = false;
 let startTs = null, secsElapsed = 0, timeLimitSecs = 300;
 let timerInt = null;
 let backspaceCount = 0;
+let bsKeyPending = false;   // a keydown Backspace was already counted; its input event must not count again
+function countBackspace(){ backspaceCount++; const l=$('liveBack'); if(l) l.textContent = backspaceCount; }
 let wpmSamples = [];
 let lastResult = null;
 let markWords = 0;
@@ -2033,12 +2059,10 @@ let lastTASelection = 0;
 
 TA.addEventListener('keydown', e=>{
   if(submitted){ e.preventDefault(); return; }
-  if(e.ctrlKey || e.metaKey || e.altKey) return; // let browser shortcuts through
   if(e.key === 'Delete' || e.key === 'Tab'){ e.preventDefault(); return; }
-  // Backspace at the very start deletes nothing (no input event fires) but is still a key press.
-  if(e.key === 'Backspace' && TA.selectionStart===0 && TA.selectionEnd===0){
-    backspaceCount++; if($('liveBack')) $('liveBack').textContent = backspaceCount;
-  }
+  // Count every physical Backspace press here (hardware keyboards, incl. key-repeat, Ctrl+Backspace and a press with nothing to delete).
+  if(e.key === 'Backspace'){ countBackspace(); bsKeyPending = true; setTimeout(()=>{ bsKeyPending=false; }, 150); } else bsKeyPending = false;
+  if(e.ctrlKey || e.metaKey || e.altKey) return; // let browser shortcuts through
 });
 
 TA.addEventListener('input', e=>{
@@ -2114,12 +2138,11 @@ TA.addEventListener('input', e=>{
     // replaying it — needed for deletions/replacements that aren't at the
     // very end of the text (e.g. caret moved back on-screen, then edited).
     TA.setSelectionRange(oldEnd, oldEnd);
-    // One Backspace key press = one count (a single press can remove several Tamil code points).
-    const it = e.inputType || '';
-    if(removedLen > 0 && (it==='deleteContentBackward' || it==='deleteWordBackward' || it==='deleteSoftLineBackward' ||
-       (!/^(insertText|insertFromPaste|insertLineBreak|deleteByCut|deleteContentForward)/.test(it) && insertedStr.length < removedLen))){
-      backspaceCount++;
-      if($('liveBack')) $('liveBack').textContent = backspaceCount;
+    // Soft keyboards (no usable keydown) report Backspace as a delete-backward input. Length changes alone
+    // (Tamil composer / IME rewriting text) are NOT Backspace presses and are never counted.
+    if(/^delete(ContentBackward|WordBackward|SoftLineBackward|HardLineBackward|CompositionText)$/.test(e.inputType||'')
+       ){
+      if(bsKeyPending) bsKeyPending = false; else countBackspace();
     }
     doDelete(removedLen);
     doInsert(insertedStr);
@@ -2374,7 +2397,7 @@ function calcResults(typed, orig, elapsedSec, onlyEvaluateTyped, live){
   });
   O.slice(tailStart).forEach(w=>origRender.push({text:w,cls:'tail-ignored'}));
 
-  return {grossWpm, netWpm, marks, total, passMarks:+(total*0.6).toFixed(1), factor, accuracy, errors: totalMistakes, ops,
+  return {grossWpm, netWpm, marks, total, passMarks:+(total*0.6).toFixed(1), factor, rawMarks:+raw.toFixed(2), capMarks:+cap.toFixed(2), typedWords:Tfull.length, needWords:need, minutes:mins, typedChars:typedLen, accuracy, errors: totalMistakes, ops,
           strokesWithSpace: typed.length, strokesWithoutSpace: typed.replace(/\s/g,'').length, completed, correctChars,
           wordErrors, omitCharMistakes: omitMistakes, omitCharsExact: omitChars,
           missingSpaceEvents: merges, missingSpaceMistakes: merges, extraCharMistakes: extras,
@@ -2428,6 +2451,28 @@ function submitTest(auto){
 /* =====================================================================
    RESULTS RENDERING
 ===================================================================== */
+
+
+function calcHTML(r){
+  const wrong = r.wordErrors.filter(e=>e.kind==='sub').length;
+  const m = r.minutes.toFixed(2);
+  let h = `<table class="rp-calc">
+    <tr><td>Wrong / mixed words</td><td>${wrong}</td></tr>
+    <tr><td>Skipped words (${r.omitCharsExact} chars ÷ 5, rounded)</td><td>${r.omitCharMistakes}</td></tr>
+    <tr><td>Missing spaces (words joined)</td><td>${r.missingSpaceMistakes}</td></tr>
+    <tr><td>Extra words</td><td>${r.extraCharMistakes}</td></tr>
+    <tr class="tot"><td>Total mistakes</td><td>${r.errors}</td></tr></table>`;
+  if(CFG.time===600){
+    let f = `<b>Marks</b> = ${r.total} − (${r.errors} × ${r.factor}) = ${r.rawMarks}`;
+    if(r.capMarks < r.rawMarks) f += `<br>Capped by passage typed: ${r.total} × ${r.typedWords}/${r.needWords} words = ${r.capMarks}`;
+    f += `<br><b>Final marks = ${r.marks} / ${r.total}</b> (pass mark ${r.passMarks})`;
+    h += `<div class="rp-formula">${f}</div>`;
+  }
+  h += `<div class="rp-formula"><b>Net WPM</b> = (${r.correctChars} correct chars ÷ 5) ÷ ${m} min = ${r.netWpm}<br>
+    <b>Gross WPM</b> = (${r.typedChars} typed chars ÷ 5) ÷ ${m} min = ${r.grossWpm}<br>
+    <b>Accuracy</b> = ${r.correctChars} ÷ ${r.typedChars} = ${r.accuracy}%</div>`;
+  return h;
+}
 
 function buildReportHTML(r){
   const isTA = CFG.lang==='ta';
@@ -2483,6 +2528,8 @@ function buildReportHTML(r){
     </table>
     <div class="rp-chips">${chipHTML}</div>
     <div class="rp-verdict" style="color:${col};border-color:${col}">${esc(head)}<br>${esc(sub)}</div>
+    <div class="rp-sec">Mistakes${CFG.time===600?' &amp; marks':''} calculation</div>
+    ${calcHTML(r)}
     <div class="rp-sec">Comparison — ${stEN} portion${timed?' (evaluated for marks)':''}</div>
     <div class="rp-leg"><span class="rc"></span> Mistake (circled, in Your Response) &nbsp; <u>abc</u> Mistake word (red underline, in Original Passage) &nbsp; · ${esc(ptitle)}</div>
     <div class="rp-cols">
